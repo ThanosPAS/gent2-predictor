@@ -16,9 +16,8 @@ aid i n that direction by i mplementing modern deep l earning models for cancer 
 We have downloaded and deployed the database GENT2, which contains high quality NCBI
 data from both normal persons and patients. We extracted cancer patient data that are
 annotated for tumor characteristics and disease staging while categorized by cancer subtype
-and containing a meta-analysis on survivability and severity of disease. From this vast database
-(~67000 patients, ~72 Cancer subtypes, 500GB of data), we have extracted the expression
-levels for 22000 genes for 5 of the most deadly sub-types of cancer that we i nitially assume will
+and containing a meta-analysis on survivability and severity of disease. We have extracted the expression
+levels for 22000 genes for 5 of the most deadly sub-types of cancer that we initially assume will
 be manageable computationally. One of our goals i s to use as much patient data as we possibly
 and realistically can feed to the computing solutions we have at our disposal. For model building
 purposes, from each sub-type, we have selected 50 patients while taking care to represent the
