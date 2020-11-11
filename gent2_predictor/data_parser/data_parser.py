@@ -51,3 +51,13 @@ class DataParser:
                         raise
 
             pickle.dump(tensor, open(os.path.join(path, f'{patient}.p'), 'wb'))
+
+    def unpickling (cancer_type):
+        cancer_dict = {}
+        #Is a path for each subtype(dubbed GROUP_PATH) available somehow?
+        for person in GROUP_PATH:
+            with open('person', 'rb') as f:
+            cancer_dict.update(pickle.load(f))
+            #Idk how to make the patient numbers the keys of the dict - if this operation doesn't do it already
+
+        return cancer_dict
