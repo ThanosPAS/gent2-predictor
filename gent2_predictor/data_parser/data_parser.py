@@ -31,6 +31,7 @@ class DataParser:
 
     @staticmethod
     def pickle_data(data):
+        path_list = []
         for patient in data['patient'].unique():
             patient_data = data.loc[data['patient'] == patient]
             cancer_type = patient_data['cancer_type'].unique()[0]
@@ -49,7 +50,7 @@ class DataParser:
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
-
+            path_list +=path
             pickle.dump(tensor, open(os.path.join(path, f'{patient}.p'), 'wb'))
 
     def unpickling (cancer_type):

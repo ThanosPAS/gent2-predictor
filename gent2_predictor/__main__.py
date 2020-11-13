@@ -60,6 +60,7 @@ def main():
         data = data_parser.parse_cancer_files()
         data_parser.pickle_data(data)
     elif args.tf:
+        data_parser = DataParser()
         unpickled_patients = data_parser.unpickling()
         gent2-predictor.data_loading(unpickled_patients)
 
@@ -89,8 +90,9 @@ def main():
                     nn.init.sparse_(m.weight)
                     nn.init.constant_(m.bias, 0)
 
+
+        model = FFN()
         model.apply(init_weights)
-        model = FFN(n_features,drop_out)
         model = model.to(device)
 
         # Save model
