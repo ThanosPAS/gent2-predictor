@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import seaborn as sns
 import torch
 import torch.optim
@@ -106,7 +105,7 @@ class FFN(nn.Module):
         #probas = self.softmax(logits, dim=1)
         #return logits, probas
 
-
+print(model)
 #How do I connect the parsing arguments in __main__ with the functions in this file?
 
 # Optimization
@@ -124,21 +123,25 @@ criterion = F.cross_entropy()
 def train_ffn(use_cuda = True):
     if use_cuda:
         model.cuda()
-    train_loss, valid_loss, output_classes = [], [], []
+    train_loss, valid_loss, y_pred_list, output_classes = [], [], [], []
 
     for epoch in range(EPOCHS):
         model.train()
         #If we want to have control of how many patients we want to have as an input.
         #How the for loop that follow will be written it will depend on what structure the x_train has
         batch_loss = 0
+        train_epoch_acc = 0
+        val_epoch_acc = 0
         for person in x_train:
             #features = features.view(-1, 28 * 28).to(device)
             pred = model(person)
             loss = criterion(pred, y_train)
+            train_acc = multi_acc(pred, y_train)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             batch_loss += loss.data
+            train_epoch_acc += train_acc.item()
         train_loss.append(batch_loss / len(x_train))
         if epoch % (EPOCHS // 10) == 0:
             print('Train Epoch: {}\tLoss: {:.6f}'.format(epoch, loss.data))
@@ -148,15 +151,43 @@ def train_ffn(use_cuda = True):
             for person in x_val:
                 pred = model(person)
                 loss = criterion(pred, y_val)
+                val_acc = multi_acc(pred, y_val)
+                batch_loss += loss.data
+                val_epoch_acc += val_acc.item()
+                ##Returns the cancer type - not sure yet how to do it
+                _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
+                y_pred_list.append(y_pred_tags.cpu().numpy())
+                output_classes.append(cancer_types[])
             valid_loss.append(loss.data)
-            output_classes.append(cancer_types[sth])
-
-        return model, train_loss, valid_loss, output_classes
 
 
-model, train_loss, valid_loss, output_classes = train_ffn()
+
+        return model, train_loss, valid_loss, train_epoch_acc, val_epoch_acc, output_classes
+
+
+def multi_acc(val_pred, y_val):
+    y_pred_softmax = torch.log_softmax(val_pred, dim=1)
+    _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
+
+    correct_pred = (y_pred_tags == y_test).float()
+    acc = correct_pred.sum() / len(correct_pred)
+
+    acc = torch.round(acc) * 100
+
+    return acc
+
+accuracy_stats = {
+    'train': [],
+    "val": [],
+    'test': []
+}
+
+model, train_loss, valid_loss, train_epoch_acc, val_epoch_acc, output_classes = train_ffn()
+
+
 
 def ffn_predict():
+    y_pred_list = []
     test_loss = []
     test_label = ''
     with torch.no_grad():
@@ -165,8 +196,13 @@ def ffn_predict():
         for person in x_test:
             pred = model(person)
             loss = criterion(pred, y_test)
+            #Extracting the label that has the biggest probability
+            y_pred_softmax = torch.log_softmax(pred, dim=1)
+            _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
+            y_pred_list.append(y_pred_tags.cpu().numpy())
+        y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
         test_loss.append(loss.data)
-        #Returns the cancer type
+        #Returns the cancer type - not sure yet how to do it
         test_label = 'sth'
         print(test_label)
     return test_loss, test_label
@@ -195,7 +231,7 @@ class Plotting():
         plt.show()
 
 
-    def plot_roc_curve():
+    def plot_roc_curve(test,pred):
         #Define where pred comes from
         #I am not sure if the threshold should be 50%
         y_test_class = np.where(y_test.flatten() >= 0.5, 1, 0)
@@ -216,10 +252,9 @@ class Plotting():
         plt.xlabel('False Positive Rate')
         plt.show()
 
+        return y_test_class, y_pred_class
 
 
-# ### Matthew's Correlation Coefficient (MCC)
-    mcc = matthews_corrcoef(y_test_class, y_pred_class)
 
     def plot_mcc():
         plt.title('Matthews Correlation Coefficient')
@@ -233,13 +268,22 @@ class Plotting():
     def stats():
         sns.countplot(x='Cancer types', data=output_classes)
 
+    def accuracy():
+        accuracy_stats['train'].append(train_epoch_acc / len(x_train))
+        accuracy_stats['val'].append(val_epoch_acc / len(x_val))
+        print(
+            f'Epoch {e + 0:03}: | Train Acc: {train_epoch_acc / len(x_train):.3f}| Val Acc: {val_epoch_acc / len(x_val):.3f}')
+
     def stat_significance():
 
 
 Plotting()
 
+# ### Matthew's Correlation Coefficient (MCC)
+mcc = matthews_corrcoef(y_test_class, y_pred_class)
 
 
-# compute accuracy
+
+
 
 
