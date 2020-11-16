@@ -62,3 +62,36 @@ class DataParser:
             #Idk how to make the patient numbers the keys of the dict - if this operation doesn't do it already
 
         return cancer_dict
+
+
+
+def data_loading():
+    #How should we distribute the cancer_dict values into in the below variables?
+    #For a list of keys assign for example to x_train these values?
+
+    #Training data
+    #for path in path_list:
+    x_train = DataLoader(cancer_dict[expression values], )
+    y_train = DataLoader(cancer_dict[some patient IDs], )
+    #Validating the models performance
+    x_val = DataLoader(cancer_dict[expression values], )
+    y_val = DataLoader(cancer_dict[some patient IDs], )
+    #Never seen data by the model
+    x_test = DataLoader(cancer_dict[expression values], )
+    y_test = DataLoader(cancer_dict[some patient IDs], )
+
+    #In case the tensors need flattening
+    #x_train = x_train.reshape(x_train.shape[0], -1)
+    #x_val = x_val.reshape(x_val.shape[0], -1)
+    #x_test = x_test.reshape(x_test.shape[0], -1)
+
+    x_train = x_train.to(device)
+    y_train = y_train.to(device)
+    x_val = x_val.to(device)
+    y_val = y_val.to(device)
+    x_test = x_test.to(device)
+    y_test = y_test.to(device)
+
+    return x_train, y_train, x_val, y_val, x_test, y_test
+
+x_train, y_train, x_val, y_val, x_test, y_test = data_loading()
