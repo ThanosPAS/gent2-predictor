@@ -1,7 +1,35 @@
 import os
+import torch
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 
-DATA_PATH = f'{DATA_DIR}/data.csv'
-STRUCTURE_PATH = f'{DATA_DIR}/Dataset structure.xlsx'
+RAW_DATA_DIR = os.path.join(DATA_DIR, 'raw_data')
+PROCESSED_DATA_DIR = os.path.join(DATA_DIR, 'processed_data')
+
+DATA_PATH = os.path.join(RAW_DATA_DIR, 'data.csv')
+STRUCTURE_PATH = os.path.join(RAW_DATA_DIR, 'Dataset structure.xlsx')
+
+CANCER_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data')
+
+MODEL_PATH_DIR = os.path.join(DATA_DIR, 'models')
+MODEL_PATH = os.path.join(MODEL_PATH_DIR, 'model.pth')
+
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+USE_CUDA = torch.cuda.is_available()
+
+EPOCHS = 3
+LEARNING_RATE = 0.001
+
+OPTIMIZER = 'ADAM'
+# OPTIMIZER = 'SGD'
+
+INIT_METHOD = 'xavier_uniform_'
+# INIT_METHOD = 'xavier_normal_'
+# INIT_METHOD = 'kaiming_uniform_'
+# INIT_METHOD = 'kaiming_normal_'
+# INIT_METHOD = 'orthogonal_'
+# INIT_METHOD = 'sparse_'
+
+L2_REG = 0
+MOMENTUM = 0
