@@ -142,3 +142,4 @@ cython_debug/
 *.p
 *.sql
 data.csv
+.DS_Store
