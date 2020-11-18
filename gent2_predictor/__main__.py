@@ -1,5 +1,11 @@
 import argparse
+import argparse
+import errno
+import os
 
+import torch
+from gent2_predictor.predictor.ffn import FFNTrainer
+from gent2_predictor.settings import DEVICE, MODEL_PATH_DIR, MODEL_PATH
 from gent2_predictor.data_parser.data_parser import DataParser
 
 
@@ -27,10 +33,23 @@ def main():
         DataParser().pickle_data()
 
     elif args.tf:
-        raise NotImplementedError
+        trainer = FFNTrainer()
+        trainer.train_ffn()
+
+        if not os.path.exists(MODEL_PATH_DIR):
+            try:
+                os.makedirs(MODEL_PATH_DIR)
+            except OSError as exc:
+                if exc.errno != errno.EEXIST:
+                    raise
+
+        torch.save(trainer.model.state_dict(), MODEL_PATH)
 
     elif args.pf:
-        raise NotImplementedError
+        pretrained_model = torch.load(MODEL_PATH)
+        trainer = FFNTrainer(pretrained_model)
+        scores = trainer.predict_ffn()
+        print(scores)
 
 
 if __name__ == "__main__":
