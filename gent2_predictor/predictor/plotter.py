@@ -4,7 +4,7 @@ import seaborn as sns
 from sklearn.metrics import roc_curve, auc, matthews_corrcoef
 
 
-class Plotting:
+class Plotter:
     def __init__(self):
         pass
 
