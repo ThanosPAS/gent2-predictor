@@ -7,7 +7,8 @@ from gent2_predictor.data_parser.data_parser import DataParser
 from gent2_predictor.settings import EPOCHS, LEARNING_RATE, OPTIMIZER, INIT_METHOD, L2_REG, \
     MOMENTUM, USE_CUDA, DEVICE
 
-
+import warnings
+warnings.filterwarnings("ignore")
 # Model structure
 class FFN(nn.Module):
     r"""An artificial neural network (ANN) for predicting
@@ -34,7 +35,7 @@ class FFN(nn.Module):
 
     def __init__(self, n_patients=1, num_classes=6, drop_out=0.2, num_hidden_1=16, num_hidden_2=16):
         super(FFN, self).__init__()
-
+        self.train_loader, self.val_loader, self.test_loader = DataParser().data_loading()
         # 1st hidden layer
         self.linear_1 = torch.nn.Linear(n_patients, num_hidden_1)
         self.relu1 = torch.nn.ReLU()
@@ -95,7 +96,7 @@ class FFNTrainer:
         if USE_CUDA:
             self.model.cuda()
 
-        train_loader, val_loader, test_loader = DataParser().data_loading()
+
 
         train_loss, valid_loss, y_pred_list, output_classes = [], [], [], []
 
@@ -107,11 +108,11 @@ class FFNTrainer:
             train_epoch_acc = 0
             val_epoch_acc = 0
 
-            for person in train_loader:
+            for person in self.train_loader:
                 x_train = person['data']
                 y_train = person['cancer_type']
                 #features = features.view(-1, 28 * 28).to(device)
-                pred = self.model(person)
+                pred = self.model(x_train)
                 loss = self.criterion(pred, y_train)
                 train_acc = self.multi_acc(pred, y_train)
                 self.optimizer.zero_grad()
@@ -128,7 +129,7 @@ class FFNTrainer:
             with torch.no_grad():
                 self.model.eval()
                 batch_loss = 0
-                for person in val_loader:
+                for person in self.val_loader:
                     x_val = person['data']
                     y_val = person['cancer_type']
 
@@ -138,6 +139,7 @@ class FFNTrainer:
                     batch_loss += loss.data
                     val_epoch_acc += val_acc.item()
                     ##Returns the cancer type - not sure yet how to do it
+                    y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
                     y_pred_list.append(y_pred_tags.cpu().numpy())
                     output_classes.append(cancer_types[])
@@ -151,7 +153,7 @@ class FFNTrainer:
         y_pred_softmax = torch.log_softmax(val_pred, dim=1)
         _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
 
-        correct_pred = (y_pred_tags == y_test).float()
+        correct_pred = (y_pred_tags == y_val).float()
         acc = correct_pred.sum() / len(correct_pred)
 
         acc = torch.round(acc) * 100
@@ -165,7 +167,8 @@ class FFNTrainer:
         with torch.no_grad():
             self.model.eval()
             batch_loss = 0
-            for person in x_test:
+            for person in self.test_loader:
+                y_test = person['cancer_type']
                 pred = self.model(person)
                 loss = self.criterion(pred, y_test)
                 #Extracting the label that has the biggest probability
