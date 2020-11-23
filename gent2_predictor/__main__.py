@@ -32,7 +32,7 @@ def main():
         DataParser().parse_structure()
         DataParser().pickle_data()
 
-    elif args.tf:
+    elif args.ffn_train:
         trainer = FFNTrainer()
         trainer.train_ffn()
 
@@ -45,7 +45,7 @@ def main():
 
         torch.save(trainer.model.state_dict(), MODEL_PATH)
 
-    elif args.pf:
+    elif args.predict_on_ffn:
         pretrained_model = torch.load(MODEL_PATH)
         trainer = FFNTrainer(pretrained_model)
         scores = trainer.predict_ffn()
