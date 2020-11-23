@@ -1,10 +1,9 @@
-<<<<<<< Updated upstream
-=======
+
 from sklearn.preprocessing import normalize as norm
 import pickle
 import os
 import torch
->>>>>>> Stashed changes
+
 import errno
 import os
 import pickle

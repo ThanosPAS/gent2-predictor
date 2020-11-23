@@ -134,19 +134,19 @@ class FFNTrainer:
                     y_val = person['cancer_type']
 
                     pred = self.model(person)
+                    y_pred_softmax = torch.log_softmax(pred, dim=1)
+                    _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
+                    y_pred_list.append(y_pred_tags.cpu().numpy())
                     loss = self.criterion(pred, y_val)
                     val_acc = self.multi_acc(pred, y_val)
                     batch_loss += loss.data
                     val_epoch_acc += val_acc.item()
                     ##Returns the cancer type - not sure yet how to do it
-                    y_pred_softmax = torch.log_softmax(pred, dim=1)
-                    _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
-                    y_pred_list.append(y_pred_tags.cpu().numpy())
-                    output_classes.append(cancer_types[])
+
 
                 valid_loss.append(loss.data)
 
-            return train_loss, valid_loss, train_epoch_acc, val_epoch_acc, output_classes
+            return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
 
     def multi_acc(self, val_pred, y_val):
