@@ -33,42 +33,36 @@ class FFN(nn.Module):
     """
 
 
-    def __init__(self, n_patients=1, num_classes=6, drop_out=0.2, num_hidden_1=16, num_hidden_2=16):
+    def __init__(self):
         super(FFN, self).__init__()
-        self.train_loader, self.val_loader, self.test_loader = DataParser().data_loading()
+
         # 1st hidden layer
-        self.linear_1 = torch.nn.Linear(n_patients, num_hidden_1)
+        self.linear_1 = torch.nn.Linear(21920, 100)
         self.relu1 = torch.nn.ReLU()
-        torch.nn.Dropout(drop_out)
+        torch.nn.Dropout(0.2)
 
         # 2nd hidden layer
-        self.linear_2 = torch.nn.Linear(num_hidden_1, num_hidden_2)
+        self.linear_2 = torch.nn.Linear(100, 70)
         self.relu2 = torch.nn.ReLU()
-        torch.nn.Dropout(drop_out)
+        torch.nn.Dropout(0.2)
 
         # Output layer
-        self.linear_out = torch.nn.Linear(num_hidden_2, num_classes)
+        self.linear_out = torch.nn.Linear(70, 6)
         self.softmax = torch.nn.Softmax()
 
-        self.batchnorm1 = nn.BatchNorm1d(num_hidden_1)
-        self.batchnorm2 = nn.BatchNorm1d(num_hidden_2)
+        # self.batchnorm1 = nn.BatchNorm1d(100)
+        # self.batchnorm2 = nn.BatchNorm1d(70)
 
         print(self)
 
 
     def forward(self, x):
-        x = self.linear_l(x)
-        x = self.batchnorm1(x)
-        x = F.relu1(x)
+        x = self.linear_1(x)
+        # x = self.batchnorm1(x)
 
         x = self.linear_2(x)
-        x = self.batchnorm2(x)
-        x = F.relu2(x)
+        # x = self.batchnorm2(x)
         return x
-
-        #logits = self.linear_out(x)
-        #probas = self.softmax(logits, dim=1)
-        #return logits, probas
 
 
 class FFNTrainer:
@@ -76,42 +70,41 @@ class FFNTrainer:
         if not model:
             self.model = FFN()
             self.model.to(DEVICE)
-            self.model.apply(self.init_weights)
+            # self.model.apply(self.init_weights)
 
-        self.criterion = F.cross_entropy
+        self.criterion = nn.CrossEntropyLoss()
 
         if OPTIMIZER.upper() == 'ADAM':
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=LEARNING_RATE, weight_decay=L2_REG)
         else:
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=LEARNING_RATE, weight_decay=L2_REG, momentum=MOMENTUM)
+        self.train_loader, self.val_loader, self.test_loader = DataParser().data_loading()
+
 
     @staticmethod
     def init_weights(m):
+        # FIXME: Correct the method to be used by model.apply()
         init_function = getattr(nn.init, INIT_METHOD, None)
-        if isinstance(INIT_METHOD, nn.init):
-            init_function(m.weight)
-            nn.init.constant_(m.bias, 0)
+        init_function(m.weight)
+        nn.init.constant_(m.bias, 0)
 
     def train_ffn(self):
         if USE_CUDA:
             self.model.cuda()
 
-
-
-        train_loss, valid_loss, y_pred_list, output_classes = [], [], [], []
+        train_loss, valid_loss = [], []
+        train_epoch_acc, val_epoch_acc = dict(), dict()
 
         for epoch in range(EPOCHS):
             self.model.train()
-            #If we want to have control of how many patients we want to have as an input.
-            #How the for loop that follow will be written it will depend on what structure the x_train has
             batch_loss = 0
-            train_epoch_acc = 0
-            val_epoch_acc = 0
+            train_epoch_acc[epoch] = 0
+            val_epoch_acc[epoch] = 0
 
             for person in self.train_loader:
                 x_train = person['data']
                 y_train = person['cancer_type']
-                #features = features.view(-1, 28 * 28).to(device)
+                x_train = x_train.type(torch.FloatTensor)
                 pred = self.model(x_train)
                 loss = self.criterion(pred, y_train)
                 train_acc = self.multi_acc(pred, y_train)
@@ -121,10 +114,9 @@ class FFNTrainer:
                 batch_loss += loss.data
                 train_epoch_acc += train_acc.item()
 
-            train_loss.append(batch_loss / len(x_train))
+                train_loss.append(batch_loss / len(x_train))
 
-            if epoch % (EPOCHS // 10) == 0:
-                print('Train Epoch: {}\tLoss: {:.6f}'.format(epoch, loss.data))
+            print('Train Epoch: {}\tLoss: {:.6f}'.format(epoch, loss.data))
 
             with torch.no_grad():
                 self.model.eval()
@@ -132,22 +124,18 @@ class FFNTrainer:
                 for person in self.val_loader:
                     x_val = person['data']
                     y_val = person['cancer_type']
-
-                    pred = self.model(person)
+                    x_val = x_val.type(torch.FloatTensor)
+                    pred = self.model(x_val)
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
-                    y_pred_list.append(y_pred_tags.cpu().numpy())
                     loss = self.criterion(pred, y_val)
                     val_acc = self.multi_acc(pred, y_val)
                     batch_loss += loss.data
                     val_epoch_acc += val_acc.item()
-                    ##Returns the cancer type - not sure yet how to do it
-
 
                 valid_loss.append(loss.data)
 
-            return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
-
+        return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
     def multi_acc(self, val_pred, y_val):
         y_pred_softmax = torch.log_softmax(val_pred, dim=1)
@@ -163,7 +151,6 @@ class FFNTrainer:
     def predict_ffn(self):
         y_pred_list = []
         test_loss = []
-        test_label = ''
         with torch.no_grad():
             self.model.eval()
             batch_loss = 0
