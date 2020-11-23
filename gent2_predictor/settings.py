@@ -33,3 +33,12 @@ INIT_METHOD = 'xavier_uniform_'
 
 L2_REG = 0
 MOMENTUM = 0
+
+TARGET_LABELS = {
+    'LIVER'  : 1,
+    'COLON'  : 2,
+    'LUNG'   : 3,
+    'BREAST' : 4,
+    'STOMACH': 5,
+    'NORMAL' : 6
+}

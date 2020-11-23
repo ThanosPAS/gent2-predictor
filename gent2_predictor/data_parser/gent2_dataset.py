@@ -5,7 +5,7 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-from gent2_predictor.settings import DEVICE
+from gent2_predictor.settings import DEVICE, TARGET_LABELS
 
 
 class Gent2Dataset(Dataset):
@@ -37,7 +37,7 @@ class Gent2Dataset(Dataset):
         with open(patient_file, 'rb') as f:
             data = pickle.load(f)
 
-        sample = {'data': data.to(DEVICE), 'cancer_type': cancer_type}
+        sample = {'data': data.to(DEVICE), 'cancer_type': TARGET_LABELS[cancer_type]}
 
         if self.transform:
             sample = self.transform(sample)
