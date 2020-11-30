@@ -53,9 +53,7 @@ class FFN(nn.Module):
 
 
     def forward(self, x):
-        x = self.linear_1(x)
-        # x = self.batchnorm1(x)
-
-        x = self.linear_2(x)
-        # x = self.batchnorm2(x)
+        x = self.relu1(self.linear_1(x))
+        x = self.relu2(self.linear_2(x))
+        x = self.linear_out(x)
         return x
