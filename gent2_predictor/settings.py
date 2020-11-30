@@ -35,10 +35,10 @@ L2_REG = 0
 MOMENTUM = 0
 
 TARGET_LABELS = {
-    'LIVER'  : 1,
-    'COLON'  : 2,
-    'LUNG'   : 3,
-    'BREAST' : 4,
-    'STOMACH': 5,
-    'NORMAL' : 6
+    'LIVER'  : 0,
+    'COLON'  : 1,
+    'LUNG'   : 2,
+    'BREAST' : 3,
+    'STOMACH': 4,
+    'NORMAL' : 5
 }
