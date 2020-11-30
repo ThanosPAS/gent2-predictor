@@ -30,7 +30,7 @@ class Trainer:
         init_function(m.weight)
         nn.init.constant_(m.bias, 0)
 
-    def train(self):
+    def start_loop(self):
         print('Training')
         if USE_CUDA:
             self.model.cuda()

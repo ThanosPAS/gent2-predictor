@@ -38,7 +38,7 @@ def main():
     elif args.ffn_train:
         model = FFN()
         trainer = Trainer(model)
-        trainer.train()
+        trainer.start_loop()
 
     elif args.predict_on_ffn:
         pretrained_model = torch.load(MODEL_PATH)
@@ -51,7 +51,7 @@ def main():
             d_model=21920, nhead=2, num_encoder_layers=1,
             num_decoder_layers=1, dim_feedforward=100)
         trainer = Trainer(model)
-        trainer.train()
+        trainer.start_loop()
 
 
 if __name__ == "__main__":
