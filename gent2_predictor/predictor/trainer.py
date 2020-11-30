@@ -49,7 +49,8 @@ class Trainer:
                 print(f'Person: {person}')
                 x_train = person['data']
                 y_train = person['cancer_type']
-                x_train = x_train.type(torch.FloatTensor)
+                y_train = y_train.type(torch.cuda.LongTensor).to(DEVICE)
+                x_train = x_train.type(torch.cuda.FloatTensor).to(DEVICE)
                 pred = self.model(x_train)
                 loss = self.criterion(pred, y_train)
                 train_acc = self.multi_acc(pred, y_train)
@@ -57,7 +58,7 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
                 batch_loss += loss.data
-                train_epoch_acc += train_acc.item()
+                train_epoch_acc[epoch] += train_acc.cpu().numpy()
 
                 train_loss.append(batch_loss / len(x_train))
 
@@ -69,7 +70,8 @@ class Trainer:
                 for person in self.val_loader:
                     x_val = person['data']
                     y_val = person['cancer_type']
-                    x_val = x_val.type(torch.FloatTensor)
+                    y_val = y_val.type(torch.cuda.LongTensor).to(DEVICE)
+                    x_val = x_val.type(torch.cuda.FloatTensor).to(DEVICE)
                     pred = self.model(x_val)
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
