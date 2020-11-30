@@ -1,11 +1,10 @@
 import argparse
-import argparse
-import errno
-import os
 
 import torch
-from gent2_predictor.predictor.ffn import FFNTrainer
-from gent2_predictor.settings import DEVICE, MODEL_PATH_DIR, MODEL_PATH
+from gent2_predictor.predictor.ffn import FFN
+from gent2_predictor.predictor.trainer import Trainer
+from gent2_predictor.predictor.generic_transformer import Transformer
+from gent2_predictor.settings import MODEL_PATH
 from gent2_predictor.data_parser.data_parser import DataParser
 
 
@@ -26,6 +25,10 @@ def main():
         '-pf', '--predict_on_ffn', action='store_true',
         help='Make predictions on the previously trained model')
 
+    parser.add_argument(
+        '-tt', '--transformer_train', action='store_true',
+        help="Train a transformer deep neural network")
+
     args = parser.parse_args()
 
     if args.parse:
@@ -33,23 +36,22 @@ def main():
         DataParser().pickle_data()
 
     elif args.ffn_train:
-        trainer = FFNTrainer()
-        trainer.train_ffn()
-
-        if not os.path.exists(MODEL_PATH_DIR):
-            try:
-                os.makedirs(MODEL_PATH_DIR)
-            except OSError as exc:
-                if exc.errno != errno.EEXIST:
-                    raise
-
-        torch.save(trainer.model.state_dict(), MODEL_PATH)
+        model = FFN()
+        trainer = Trainer(model)
+        trainer.train()
 
     elif args.predict_on_ffn:
         pretrained_model = torch.load(MODEL_PATH)
-        trainer = FFNTrainer(pretrained_model)
-        scores = trainer.predict_ffn()
+        trainer = Trainer(pretrained_model)
+        scores = trainer.predict()
         print(scores)
+
+    elif args.transformer_train:
+        model = Transformer(
+            d_model=21920, nhead=2, num_encoder_layers=1,
+            num_decoder_layers=1, dim_feedforward=100)
+        trainer = Trainer(model)
+        trainer.train()
 
 
 if __name__ == "__main__":

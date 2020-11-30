@@ -3,17 +3,11 @@ from typing import Optional, Any
 
 import torch
 from torch import Tensor
-from .. import functional as F
-from .module import Module
-from .activation import MultiheadAttention
-from .container import ModuleList
-from ..init import xavier_uniform_
-from .dropout import Dropout
-from .linear import Linear
-from .normalization import LayerNorm
+import torch.nn as nn
+import torch.nn.functional as F
 
 
-class Transformer(Module):
+class Transformer(nn.Module):
     r"""A transformer model. User is able to modify the attributes as needed. The architecture
     is based on the paper "Attention Is All You Need". Ashish Vaswani, Noam Shazeer,
     Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Lukasz Kaiser, and
@@ -48,14 +42,14 @@ class Transformer(Module):
             self.encoder = custom_encoder
         else:
             encoder_layer = TransformerEncoderLayer(d_model, nhead, dim_feedforward, dropout, activation)
-            encoder_norm = LayerNorm(d_model)
+            encoder_norm = nn.LayerNorm(d_model)
             self.encoder = TransformerEncoder(encoder_layer, num_encoder_layers, encoder_norm)
 
         if custom_decoder is not None:
             self.decoder = custom_decoder
         else:
             decoder_layer = TransformerDecoderLayer(d_model, nhead, dim_feedforward, dropout, activation)
-            decoder_norm = LayerNorm(d_model)
+            decoder_norm = nn.LayerNorm(d_model)
             self.decoder = TransformerDecoder(decoder_layer, num_decoder_layers, decoder_norm)
 
         self._reset_parameters()
@@ -129,10 +123,10 @@ class Transformer(Module):
 
         for p in self.parameters():
             if p.dim() > 1:
-                xavier_uniform_(p)
+                nn.init.xavier_uniform_(p)
 
 
-class TransformerEncoder(Module):
+class TransformerEncoder(nn.Module):
     r"""TransformerEncoder is a stack of N encoder layers
     Args:
         encoder_layer: an instance of the TransformerEncoderLayer() class (required).
@@ -172,7 +166,7 @@ class TransformerEncoder(Module):
         return output
 
 
-class TransformerDecoder(Module):
+class TransformerDecoder(nn.Module):
     r"""TransformerDecoder is a stack of N decoder layers
     Args:
         decoder_layer: an instance of the TransformerDecoderLayer() class (required).
@@ -220,7 +214,8 @@ class TransformerDecoder(Module):
 
         return output
 
-class TransformerEncoderLayer(Module):
+
+class TransformerEncoderLayer(nn.Module):
     r"""TransformerEncoderLayer is made up of self-attn and feedforward network.
     This standard encoder layer is based on the paper "Attention Is All You Need".
     Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,
@@ -241,16 +236,16 @@ class TransformerEncoderLayer(Module):
 
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation="relu"):
         super(TransformerEncoderLayer, self).__init__()
-        self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout)
+        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         # Implementation of Feedforward model
-        self.linear1 = Linear(d_model, dim_feedforward)
-        self.dropout = Dropout(dropout)
-        self.linear2 = Linear(dim_feedforward, d_model)
+        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.dropout = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(dim_feedforward, d_model)
 
-        self.norm1 = LayerNorm(d_model)
-        self.norm2 = LayerNorm(d_model)
-        self.dropout1 = Dropout(dropout)
-        self.dropout2 = Dropout(dropout)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
 
         self.activation = _get_activation_fn(activation)
 
@@ -278,7 +273,7 @@ class TransformerEncoderLayer(Module):
         return src
 
 
-class TransformerDecoderLayer(Module):
+class TransformerDecoderLayer(nn.Module):
     r"""TransformerDecoderLayer is made up of self-attn, multi-head-attn and feedforward network.
     This standard decoder layer is based on the paper "Attention Is All You Need".
     Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,
@@ -300,19 +295,19 @@ class TransformerDecoderLayer(Module):
 
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation="relu"):
         super(TransformerDecoderLayer, self).__init__()
-        self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout)
-        self.multihead_attn = MultiheadAttention(d_model, nhead, dropout=dropout)
+        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
+        self.multihead_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         # Implementation of Feedforward model
-        self.linear1 = Linear(d_model, dim_feedforward)
-        self.dropout = Dropout(dropout)
-        self.linear2 = Linear(dim_feedforward, d_model)
+        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.dropout = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(dim_feedforward, d_model)
 
-        self.norm1 = LayerNorm(d_model)
-        self.norm2 = LayerNorm(d_model)
-        self.norm3 = LayerNorm(d_model)
-        self.dropout1 = Dropout(dropout)
-        self.dropout2 = Dropout(dropout)
-        self.dropout3 = Dropout(dropout)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.norm3 = nn.LayerNorm(d_model)
+        self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
+        self.dropout3 = nn.Dropout(dropout)
 
         self.activation = _get_activation_fn(activation)
 
@@ -349,7 +344,7 @@ class TransformerDecoderLayer(Module):
 
 
 def _get_clones(module, N):
-    return ModuleList([copy.deepcopy(module) for i in range(N)])
+    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
 
 def _get_activation_fn(activation):
