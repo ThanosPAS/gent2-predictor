@@ -66,7 +66,7 @@ class Trainer:
 
                 train_loss.append(batch_loss / len(x_train))
 
-            print('Train Epoch: {}\tLoss: {:.6f}'.format(epoch, loss.data))
+            print('Train Epoch: {}\tAcc: {:.6f}'.format(epoch, loss.data))
 
             with torch.no_grad():
                 self.model.eval()
