@@ -34,6 +34,11 @@ class Trainer:
         print('Training')
         if USE_CUDA:
             self.model.cuda()
+            LongTensor = torch.cuda.LongTensor
+            FloatTensor = torch.cuda.FloatTensor
+        else:
+            LongTensor = torch.LongTensor
+            FloatTensor = torch.FloatTensor
 
         train_loss, valid_loss = [], []
         train_epoch_acc, val_epoch_acc = dict(), dict()
@@ -46,11 +51,10 @@ class Trainer:
             val_epoch_acc[epoch] = 0
 
             for person in self.train_loader:
-                print(f'Person: {person}')
                 x_train = person['data']
                 y_train = person['cancer_type']
-                y_train = y_train.type(torch.LongTensor).to(DEVICE)
-                x_train = x_train.type(torch.FloatTensor).to(DEVICE)
+                y_train = y_train.type(LongTensor)
+                x_train = x_train.type(FloatTensor)
                 pred = self.model(x_train)
                 loss = self.criterion(pred, y_train)
                 train_acc = self.multi_acc(pred, y_train)
@@ -70,8 +74,8 @@ class Trainer:
                 for person in self.val_loader:
                     x_val = person['data']
                     y_val = person['cancer_type']
-                    y_val = y_val.type(torch.cuda.LongTensor).to(DEVICE)
-                    x_val = x_val.type(torch.cuda.FloatTensor).to(DEVICE)
+                    y_val = y_val.type(LongTensor)
+                    x_val = x_val.type(FloatTensor)
                     pred = self.model(x_val)
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
@@ -83,7 +87,7 @@ class Trainer:
                 valid_loss.append(loss.data)
 
         self.save_model()
-        return train_loss, valid_loss,train_epoch_acc,val_epoch_acc
+        return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
     def multi_acc(self, val_pred, y_val):
         y_pred_softmax = torch.log_softmax(val_pred, dim=1)
