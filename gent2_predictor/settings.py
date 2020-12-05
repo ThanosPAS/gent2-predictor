@@ -19,12 +19,12 @@ MODEL_PATH = os.path.join(MODEL_PATH_DIR, 'model.pth')
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 USE_CUDA = torch.cuda.is_available()
 
-EPOCHS = 5
-LEARNING_RATE = 0.001
-MINI_BATCH_SIZE = 2
+EPOCHS = 10
+LEARNING_RATE = 0.0001
 
-OPTIMIZER = 'ADAM'
-# OPTIMIZER = 'SGD'
+
+#OPTIMIZER = 'ADAM'
+OPTIMIZER = 'SGD'
 
 INIT_METHOD = 'xavier_uniform_'
 # INIT_METHOD = 'xavier_normal_'

@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader, random_split
 
 from gent2_predictor.data_parser.gent2_dataset import Gent2Dataset
 from gent2_predictor.settings import STRUCTURE_PATH, DATA_PATH, PROCESSED_DATA_DIR, \
-    CANCER_DATA_DIR, MINI_BATCH_SIZE
+    CANCER_DATA_DIR
 
 
 class DataParser:
@@ -66,8 +66,8 @@ class DataParser:
             generator=torch.Generator().manual_seed(42)
         )
 
-        train_loader = DataLoader(train_set, batch_size=MINI_BATCH_SIZE)
-        val_loader = DataLoader(val_size, batch_size=MINI_BATCH_SIZE)
-        test_loader = DataLoader(test_size, batch_size=MINI_BATCH_SIZE)
+        train_loader = DataLoader(train_set)
+        val_loader = DataLoader(val_size)
+        test_loader = DataLoader(test_size)
 
         return train_loader, val_loader, test_loader

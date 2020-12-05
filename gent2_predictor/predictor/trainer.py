@@ -48,9 +48,11 @@ class Trainer:
 
         for epoch in range(EPOCHS):
             self.model.train()
-            batch_loss = 0
+            train_batch_loss = 0
+            val_batch_loss = 0
             train_epoch_acc[epoch] = 0
             val_epoch_acc[epoch] = 0
+            running_train_acc, running_val_acc = [],[]
 
             with tqdm(total=len(self.train_loader.dataset),
                       desc=f"[Epoch {epoch + 1:3d}/{EPOCHS}]") as pbar:
@@ -62,24 +64,27 @@ class Trainer:
 
                     pred = self.model(x_train)
                     t_loss = self.criterion(pred, y_train)
-                    train_acc = self.multi_acc(pred, y_train)
+                    personal_train_acc = self.multi_acc(pred, y_train)
+                    running_train_acc.append(personal_train_acc)
+
 
                     self.optimizer.zero_grad()
                     t_loss.backward()
                     self.optimizer.step()
 
-                    batch_loss += t_loss.item()
-                    train_epoch_acc[epoch] += train_acc.cpu().numpy()
+                    train_batch_loss += t_loss.item()
 
-                    train_loss.append(batch_loss / len(x_train))
-
-                    pbar.set_postfix({'loss': batch_loss})
+                    pbar.set_postfix({'loss': train_batch_loss})
                     pbar.update(x_train.shape[0])
 
+                trainset_acc = sum(running_train_acc) / len(running_train_acc)
+                trainset_acc = round(trainset_acc,3) * 100
+                train_epoch_acc[epoch] += trainset_acc
+
+                train_loss.append(train_batch_loss / len(self.train_loader))
                 with torch.no_grad():
 
                     self.model.eval()
-                    batch_loss = 0
 
                     for person in self.val_loader:
 
@@ -87,35 +92,39 @@ class Trainer:
                         y_val = person['cancer_type'].type(long_tensor)
 
                         pred = self.model(x_val)
-                        y_pred_softmax = torch.log_softmax(pred, dim=1)
-                        _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
                         v_loss = self.criterion(pred, y_val)
-                        val_acc = self.multi_acc(pred, y_val)
+                        personal_valset_acc = self.multi_acc(pred, y_val)
+                        running_val_acc.append(personal_valset_acc)
 
-                        batch_loss += v_loss.item()
-                        val_epoch_acc[epoch] += val_acc.cpu().numpy()
+                        val_batch_loss += v_loss.item()
 
-                    valid_loss.append(v_loss.data)
+                    valset_acc = sum(running_val_acc) / len(running_val_acc)
+                    valset_acc = round(valset_acc, 3) * 100
+                    val_epoch_acc[epoch] += valset_acc
 
+
+                    valid_loss.append(val_batch_loss / len(self.val_loader))
                 pbar.set_postfix({
-                    'loss'    : t_loss.item(),
-                    'val_loss': v_loss.item(),
-                    'acc'     : train_acc.cpu().numpy(),
-                    'val_acc' : val_acc.cpu().numpy()
+                    'loss'    : train_loss[epoch],
+                    'val_loss': valid_loss[epoch],
+                    'acc'     : train_epoch_acc[epoch],
+                    'val_acc' : val_epoch_acc[epoch]
                 })
 
         self.save_model()
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
-    def multi_acc(self, val_pred, y_val):
-        y_pred_softmax = torch.log_softmax(val_pred, dim=1)
+    def multi_acc(self, pred, y):
+        y_pred_softmax = torch.log_softmax(pred, dim=1)
         _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
 
-        correct_pred = (y_pred_tags == y_val).float()
-        acc = correct_pred.sum() / len(correct_pred)
 
-        acc = torch.round(acc) * 100
+        correct_pred = (y_pred_tags == y)
+        if correct_pred:
+            acc = 1
+        else:
+            acc = 0
 
         return acc
 
