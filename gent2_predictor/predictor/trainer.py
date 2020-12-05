@@ -3,9 +3,11 @@ import os
 from gent2_predictor.data_parser.data_parser import DataParser
 
 from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, MOMENTUM, \
-    INIT_METHOD, USE_CUDA, EPOCHS, MODEL_PATH, MODEL_PATH_DIR
+    INIT_METHOD, USE_CUDA, EPOCHS, MODEL_PATH, MODEL_PATH_DIR, MINI_BATCH_SIZE
 import torch
 import torch.nn as nn
+from sklearn.preprocessing import Normalizer
+#from torch.utils.data import Subset, DataLoader
 
 
 class Trainer:
@@ -20,9 +22,19 @@ class Trainer:
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=LEARNING_RATE, weight_decay=L2_REG)
         else:
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=LEARNING_RATE, weight_decay=L2_REG, momentum=MOMENTUM)
+
         self.train_loader, self.val_loader, self.test_loader = DataParser().data_loading()
-
-
+        #self.train_batch = DataLoader(dataset=Subset(self.train_loader['data'], self.train_loader['cancer_type']), batch_size=MINI_BATCH_SIZE, shuffle=True)
+        #self.valid_batch = DataLoader(dataset=Subset(self.valid_loader['data'], self.valid_loader['cancer_type']), batch_size=MINI_BATCH_SIZE, shuffle=True)
+        '''
+        self.normalizer = Normalizer()
+        self.normalizer.fit(self.train_loader)
+        self.normalizer.fit(self.val_loader)
+        self.normalizer.fit(self.test_loader)
+        self.train_loader = self.normalizer.transform(self.train_loader)
+        self.val_loader = self.normalizer.transform(self.val_loader)
+        self.test_loader = self.normalizer.transform(self.test_loader)
+'''
     @staticmethod
     def init_weights(m):
         # FIXME: Correct the method to be used by model.apply()
@@ -42,7 +54,10 @@ class Trainer:
 
         train_loss, valid_loss = [], []
         train_epoch_acc, val_epoch_acc = dict(), dict()
-
+        #x_train_pair = torch.empty(1,21920).type(FloatTensor)
+        #y_train_pair = torch.empty(1)
+        #x_val_pair = torch.empty(2, 21920).type(FloatTensor)
+        #y_val_pair = torch.empty(2, 1).type(LongTensor)
         for epoch in range(EPOCHS):
             print(f'Epoch: {epoch}')
             self.model.train()
@@ -51,6 +66,8 @@ class Trainer:
             val_epoch_acc[epoch] = 0
 
             for person in self.train_loader:
+                #x_pair = torch.cat([x_train_pair, person['data']],dim = 0)type(FloatTensor)
+                #y_pair = torch.stack([y_train_pair,person['cancer_type']], dim = 0)
                 x_train = person['data']
                 y_train = person['cancer_type']
                 y_train = y_train.type(LongTensor)
@@ -64,9 +81,11 @@ class Trainer:
                 batch_loss += loss.data
                 train_epoch_acc[epoch] += train_acc.cpu().numpy()
 
-                train_loss.append(batch_loss / len(x_train))
 
-            print('Train Epoch: {}\tAcc: {:.6f}'.format(epoch, loss.data))
+            train_loss.append(batch_loss / len(self.train_loader))
+            #x_train_pair = torch.empty(2, 21920)
+            #y_train_pair = torch.empty(2, 1)
+            print('Train Epoch: {}\tLoss: {:.6f}'.format(epoch, loss.data))
 
             with torch.no_grad():
                 self.model.eval()
@@ -85,9 +104,12 @@ class Trainer:
                     val_epoch_acc[epoch] += val_acc.cpu().numpy()
 
                 valid_loss.append(loss.data)
-
-        self.save_model()
+                #x_val_pair = torch.empty(2, 21920)
+                #y_val_pair = torch.empty(2, 1)
+            self.save_model()
+            print('Hello')
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
+
 
     def multi_acc(self, val_pred, y_val):
         y_pred_softmax = torch.log_softmax(val_pred, dim=1)
@@ -126,3 +148,4 @@ class Trainer:
             os.makedirs(MODEL_PATH_DIR)
 
         torch.save(self.model.state_dict(), MODEL_PATH)
+
