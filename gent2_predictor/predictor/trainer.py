@@ -26,8 +26,6 @@ class Trainer:
 
         self.train_loader, self.val_loader, self.test_loader = DataParser().data_loading()
 
-        self.train_loader, self.val_loader, self.test_loader = DataParser().data_loading()
-
     @staticmethod
     def init_weights(m):
         # FIXME: Correct the method to be used by model.apply()
