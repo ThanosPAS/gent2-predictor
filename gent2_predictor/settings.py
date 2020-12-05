@@ -1,4 +1,5 @@
 import os
+
 import torch
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,8 +19,9 @@ MODEL_PATH = os.path.join(MODEL_PATH_DIR, 'model.pth')
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 USE_CUDA = torch.cuda.is_available()
 
-EPOCHS = 3
+EPOCHS = 2
 LEARNING_RATE = 0.001
+MINI_BATCH_SIZE = 2
 
 OPTIMIZER = 'ADAM'
 # OPTIMIZER = 'SGD'
