@@ -1,5 +1,5 @@
 import os
-
+import os.path
 import torch
 import torch.nn as nn
 from tqdm import tqdm
@@ -137,30 +137,67 @@ class Trainer:
             long_tensor = torch.LongTensor
             float_tensor = torch.FloatTensor
         test_batch_loss = 0
-        test_loss,pred_labels = [],[]
+        test_loss = 0
+        pred_labels, loss_list = [],[]
 
         with torch.no_grad():
             self.model.eval()
-
+            i = 0
             for person in self.test_loader:
-                x_test = person['data'].type(float_tensor)
-                y_test = person['cancer_type'].type(long_tensor)
-                pred = self.model(x_test)
-                t_loss = self.criterion(pred, y_test)
 
-                test_batch_loss += t_loss.item()
-                y_pred_softmax = torch.log_softmax(pred, dim=1)
-                _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
-                pred_labels.append(y_pred_tags)
-                #print('Predicted cancer type for patient ', patient[person], 'is: ', pred_labels[person])
-            test_loss.append(test_batch_loss / len(self.val_loader))
-            print('Final test loss:', test_loss)
+                with tqdm(total=len(self.test_loader.dataset),
+                          desc=f"[person {i + 1:3d}/{len(self.test_loader.dataset)}]") as pbar:
+                    x_test = person['data'].type(float_tensor)
+                    y_test = person['cancer_type'].type(long_tensor)
+                    pred = self.model(x_test)
+                    t_loss = self.criterion(pred, y_test)
+
+                    test_batch_loss += t_loss.item()
+                    loss_cast = t_loss.tolist()
+                    loss_str = str(loss_cast)
+                    loss_list.append(loss_str)
+                    pbar.set_postfix({'loss': t_loss.item()})
+                    pbar.update(x_test.shape[0])
+                    y_pred_softmax = torch.log_softmax(pred, dim=1)
+                    _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
+                    pred_labels.append(y_pred_tags)
+                    #print('Predicted cancer type for patient ', patient[person], 'is: ', pred_labels[person])
+                i += 1
+            test_loss= test_batch_loss / len(self.val_loader)
+            test_loss =round(test_loss, 2) * 100
+
+            self.save_predictions(loss_list)
+        return 'Prediction successful'
 
 
-        return test_loss,y_pred_tags
 
     def save_model(self):
         if not os.path.exists(MODEL_PATH_DIR):
             os.makedirs(MODEL_PATH_DIR)
 
         torch.save(self.model.state_dict(), MODEL_PATH)
+
+
+    def save_predictions(self,loss_list):
+        save_path =MODEL_PATH_DIR
+        if not os.path.exists(MODEL_PATH_DIR):
+            os.makedirs(MODEL_PATH_DIR)
+
+        file_name = 'prediction_losses'
+        prediction_losses = os.path.join(save_path, file_name + ".txt")
+
+        file1 = open(prediction_losses, "w")
+        '''
+        report = open('prediction_losses.txt', 'w')
+        
+        with report as f:
+            for item in loss_list:
+                f.write(item)
+                '''
+        with open("prediction_losses.txt", "w") as outfile:
+            outfile.write("\n".join(str(item) for item in loss_list))
+        outfile =open("prediction_losses.txt", "r")
+        file1.write(outfile.read())
+        file1.close()
+        return 'Save successful'
+
