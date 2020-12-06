@@ -1,11 +1,12 @@
 import argparse
 
 import torch
-from gent2_predictor.predictor.ffn import FFN
-from gent2_predictor.predictor.trainer import Trainer
-from gent2_predictor.predictor.generic_transformer import Transformer
-from gent2_predictor.settings import MODEL_PATH
+
 from gent2_predictor.data_parser.data_parser import DataParser
+from gent2_predictor.predictor.ffn import FFN
+from gent2_predictor.predictor.generic_transformer import Transformer
+from gent2_predictor.predictor.trainer import Trainer
+from gent2_predictor.settings import MODEL_PATH
 
 
 def main():
@@ -41,8 +42,9 @@ def main():
         trainer.start_loop()
 
     elif args.predict_on_ffn:
-        pretrained_model = torch.load(MODEL_PATH)
-        trainer = Trainer(pretrained_model)
+        model = FFN()
+        model.load_state_dict(torch.load(MODEL_PATH))
+        trainer = Trainer(model)
         scores = trainer.predict()
         print(scores)
 
