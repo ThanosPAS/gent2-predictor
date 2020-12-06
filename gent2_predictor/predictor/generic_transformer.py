@@ -31,10 +31,14 @@ class Transformer(nn.Module):
         >>> out = transformer_model(src, tgt)
     Note: A full example to apply nn.Transformer module for the word language model is available in
     https://github.com/pytorch/examples/tree/master/word_language_model
+    Default settings:
+    d_model: int = 512, nhead: int = 8, num_encoder_layers: int = 6,
+                 num_decoder_layers: int = 6, dim_feedforward: int = 2048, dropout: float = 0.1,
+                 activation: str = "relu", custom_encoder: Optional[Any] = None, custom_decoder: Optional[Any] = None
     """
 
-    def __init__(self, d_model: int = 512, nhead: int = 8, num_encoder_layers: int = 6,
-                 num_decoder_layers: int = 6, dim_feedforward: int = 2048, dropout: float = 0.1,
+    def __init__(self, d_model, nhead, num_encoder_layers,
+                 num_decoder_layers, dim_feedforward, dropout: float = 0.1,
                  activation: str = "relu", custom_encoder: Optional[Any] = None, custom_decoder: Optional[Any] = None) -> None:
         super(Transformer, self).__init__()
 
@@ -234,7 +238,7 @@ class TransformerEncoderLayer(nn.Module):
         >>> out = encoder_layer(src)
     """
 
-    def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation="relu"):
+    def __init__(self, d_model, nhead, dim_feedforward, dropout=0.1, activation="relu"):
         super(TransformerEncoderLayer, self).__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         # Implementation of Feedforward model
@@ -293,7 +297,7 @@ class TransformerDecoderLayer(nn.Module):
         >>> out = decoder_layer(tgt, memory)
     """
 
-    def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation="relu"):
+    def __init__(self, d_model, nhead, dim_feedforward, dropout=0.1, activation="relu"):
         super(TransformerDecoderLayer, self).__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
         self.multihead_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)

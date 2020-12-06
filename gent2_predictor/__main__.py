@@ -50,7 +50,7 @@ def main():
 
     elif args.transformer_train:
         model = Transformer(
-            d_model=21920, nhead=2, num_encoder_layers=1,
+            d_model=10000, nhead=1, num_encoder_layers=1,
             num_decoder_layers=1, dim_feedforward=100)
         trainer = Trainer(model)
         trainer.start_loop()
