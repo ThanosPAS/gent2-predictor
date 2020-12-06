@@ -119,7 +119,6 @@ class Trainer:
         y_pred_softmax = torch.log_softmax(pred, dim=1)
         _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
 
-
         correct_pred = (y_pred_tags == y)
         if correct_pred:
             acc = 1
@@ -129,25 +128,36 @@ class Trainer:
         return acc
 
     def predict(self):
-        y_pred_list = []
-        test_loss = []
+        print('Predicting\n')
+        if USE_CUDA:
+            self.model.cuda()
+            long_tensor = torch.cuda.LongTensor
+            float_tensor = torch.cuda.FloatTensor
+        else:
+            long_tensor = torch.LongTensor
+            float_tensor = torch.FloatTensor
+        test_batch_loss = 0
+        test_loss,pred_labels = [],[]
+
         with torch.no_grad():
             self.model.eval()
-            batch_loss = 0
+
             for person in self.test_loader:
-                y_test = person['cancer_type']
-                pred = self.model(person)
-                loss = self.criterion(pred, y_test)
-                # Extracting the label that has the biggest probability
+                x_test = person['data'].type(float_tensor)
+                y_test = person['cancer_type'].type(long_tensor)
+                pred = self.model(x_test)
+                t_loss = self.criterion(pred, y_test)
+
+                test_batch_loss += t_loss.item()
                 y_pred_softmax = torch.log_softmax(pred, dim=1)
                 _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
-                y_pred_list.append(y_pred_tags.cpu().numpy())
-            y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
-            test_loss.append(loss.data)
-            # Returns the cancer type - not sure yet how to do it
-            test_label = 'sth'
-            print(test_label)
-        return test_loss, test_label
+                pred_labels.append(y_pred_tags)
+                #print('Predicted cancer type for patient ', patient[person], 'is: ', pred_labels[person])
+            test_loss.append(test_batch_loss / len(self.val_loader))
+            print('Final test loss:', test_loss)
+
+
+        return test_loss,y_pred_tags
 
     def save_model(self):
         if not os.path.exists(MODEL_PATH_DIR):
