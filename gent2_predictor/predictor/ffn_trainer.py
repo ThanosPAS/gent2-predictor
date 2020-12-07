@@ -9,7 +9,7 @@ from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, M
     INIT_METHOD, USE_CUDA, EPOCHS, MODEL_PATH, MODEL_PATH_DIR
 
 
-class Trainer:
+class FFNTrainer:
     def __init__(self, model=None):
         self.model = model
         self.model.to(DEVICE)
@@ -58,6 +58,7 @@ class Trainer:
                       desc=f"[Epoch {epoch + 1:3d}/{EPOCHS}]") as pbar:
 
                 for idx_batch, person in enumerate(self.train_loader):
+
                     x_train = person['data'].type(float_tensor)
                     y_train = person['cancer_type'].type(long_tensor)
 
@@ -85,6 +86,7 @@ class Trainer:
                     self.model.eval()
 
                     for person in self.val_loader:
+
                         x_val = person['data'].type(float_tensor)
                         y_val = person['cancer_type'].type(long_tensor)
 
@@ -100,11 +102,12 @@ class Trainer:
                     val_epoch_acc[epoch] += valset_acc
 
                     valid_loss.append(val_batch_loss / len(self.val_loader))
+
                 pbar.set_postfix({
-                    'loss': train_loss[epoch],
+                    'loss'    : train_loss[epoch],
                     'val_loss': valid_loss[epoch],
-                    'acc': train_epoch_acc[epoch],
-                    'val_acc': val_epoch_acc[epoch]
+                    'acc'     : train_epoch_acc[epoch],
+                    'val_acc' : val_epoch_acc[epoch]
                 })
 
         self.save_model()
@@ -132,45 +135,39 @@ class Trainer:
         else:
             long_tensor = torch.LongTensor
             float_tensor = torch.FloatTensor
+
         test_batch_loss = 0
         test_loss = 0
-        pred_labels, loss_list, running_test_acc = [], [], []
+        pred_labels, loss_list = [], []
 
         with torch.no_grad():
             self.model.eval()
             i = 0
             for person in self.test_loader:
+
                 with tqdm(total=len(self.test_loader.dataset),
                           desc=f"[person {i + 1:3d}/{len(self.test_loader.dataset)}]") as pbar:
                     x_test = person['data'].type(float_tensor)
                     y_test = person['cancer_type'].type(long_tensor)
                     pred = self.model(x_test)
                     t_loss = self.criterion(pred, y_test)
-                    personal_test_acc = self.multi_acc(pred, y_test)
-                    running_test_acc.append(personal_test_acc)
+
                     test_batch_loss += t_loss.item()
                     loss_cast = t_loss.tolist()
                     loss_str = str(loss_cast)
                     loss_list.append(loss_str)
-
+                    pbar.set_postfix({'loss': t_loss.item()})
                     pbar.update(x_test.shape[0])
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
                     pred_labels.append(y_pred_tags)
                     # print('Predicted cancer type for patient ', patient[person], 'is: ', pred_labels[person])
-                    testset_acc = sum(running_test_acc) / len(running_test_acc)
-                    testset_acc = round(testset_acc, 3) * 100
-                    pbar.set_postfix({
-                        'loss': t_loss.item(),
-                        'test_acc': testset_acc
-                    })
-
                 i += 1
             test_loss = test_batch_loss / len(self.val_loader)
             test_loss = round(test_loss, 2) * 100
 
             self.save_predictions(loss_list)
-        return testset_acc, test_loss
+        print('Prediction successful')
 
     def save_model(self):
         if not os.path.exists(MODEL_PATH_DIR):
@@ -193,5 +190,4 @@ class Trainer:
         outfile = open("prediction_losses.txt", "r")
         file1.write(outfile.read())
         file1.close()
-        return 'Save successful'
-
+        print('Save successful')

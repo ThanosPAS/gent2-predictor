@@ -1,11 +1,12 @@
 import argparse
 
 import torch
+import torch.nn as nn
 
 from gent2_predictor.data_parser.data_parser import DataParser
 from gent2_predictor.predictor.ffn import FFN
-from gent2_predictor.predictor.generic_transformer import Transformer
-from gent2_predictor.predictor.trainer import Trainer
+from gent2_predictor.predictor.ffn_trainer import FFNTrainer
+from gent2_predictor.predictor.transformer_trainer import TransformerTrainer
 from gent2_predictor.settings import MODEL_PATH
 
 
@@ -38,22 +39,23 @@ def main():
 
     elif args.ffn_train:
         model = FFN()
-        trainer = Trainer(model)
+        trainer = FFNTrainer(model)
         trainer.start_loop()
 
     elif args.predict_on_ffn:
         model = FFN()
         model.load_state_dict(torch.load(MODEL_PATH))
-        trainer = Trainer(model)
+        trainer = FFNTrainer(model)
         scores = trainer.predict()
         print(scores)
 
     elif args.transformer_train:
-        model = Transformer(
-            d_model=10000, nhead=1, num_encoder_layers=1,
+        fraction = 4
+        model = nn.Transformer(
+            d_model=21920 // fraction, nhead=2, num_encoder_layers=1,
             num_decoder_layers=1, dim_feedforward=100)
-        trainer = Trainer(model)
-        trainer.start_loop()
+        trainer = TransformerTrainer(model)
+        trainer.start_loop(fraction)
 
 
 if __name__ == "__main__":
