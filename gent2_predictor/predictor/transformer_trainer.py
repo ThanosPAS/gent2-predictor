@@ -9,7 +9,7 @@ from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, M
     INIT_METHOD, USE_CUDA, EPOCHS, MODEL_PATH, MODEL_PATH_DIR
 
 
-class Trainer:
+class TransformerTrainer:
     def __init__(self, model=None):
         self.model = model
         self.model.to(DEVICE)

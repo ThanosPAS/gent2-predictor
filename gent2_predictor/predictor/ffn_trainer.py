@@ -1,12 +1,13 @@
 import os
 import os.path
 import torch
+import numpy as np
 import torch.nn as nn
 from tqdm import tqdm
-
+from gent2_predictor.predictor.plotter import Plotter
 from gent2_predictor.data_parser.data_parser import DataParser
 from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, MOMENTUM, \
-    INIT_METHOD, USE_CUDA, EPOCHS, MODEL_PATH, MODEL_PATH_DIR
+    INIT_METHOD, USE_CUDA, EPOCHS, MODEL_PATH, MODEL_PATH_DIR, TARGET_LABELS
 
 
 class FFNTrainer:
@@ -135,39 +136,54 @@ class FFNTrainer:
         else:
             long_tensor = torch.LongTensor
             float_tensor = torch.FloatTensor
-
         test_batch_loss = 0
         test_loss = 0
-        pred_labels, loss_list = [], []
+        pred_labels, loss_list, running_test_acc,y_test_list = [], [], [],[]
 
         with torch.no_grad():
             self.model.eval()
             i = 0
             for person in self.test_loader:
-
                 with tqdm(total=len(self.test_loader.dataset),
                           desc=f"[person {i + 1:3d}/{len(self.test_loader.dataset)}]") as pbar:
                     x_test = person['data'].type(float_tensor)
                     y_test = person['cancer_type'].type(long_tensor)
                     pred = self.model(x_test)
                     t_loss = self.criterion(pred, y_test)
-
+                    personal_test_acc = self.multi_acc(pred, y_test)
+                    running_test_acc.append(personal_test_acc)
                     test_batch_loss += t_loss.item()
                     loss_cast = t_loss.tolist()
                     loss_str = str(loss_cast)
                     loss_list.append(loss_str)
-                    pbar.set_postfix({'loss': t_loss.item()})
+                    y_test_list.append(y_test.item())
+                    #y_test_cast = y_test_list.tolist()
                     pbar.update(x_test.shape[0])
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
-                    pred_labels.append(y_pred_tags)
+                    pred_labels.append(y_pred_tags.item())
                     # print('Predicted cancer type for patient ', patient[person], 'is: ', pred_labels[person])
+                    testset_acc = sum(running_test_acc) / len(running_test_acc)
+                    testset_acc = round(testset_acc, 3) * 100
+                    pbar.set_postfix({
+                        'loss': t_loss.item(),
+                        'accumulated_test_acc': testset_acc
+                    })
+
                 i += 1
             test_loss = test_batch_loss / len(self.val_loader)
             test_loss = round(test_loss, 2) * 100
-
+            pred_arr = np.asarray(pred_labels)
+            y_test_arr = np.asarray(y_test_list)
             self.save_predictions(loss_list)
+
+
+            Plotter.plot_cm(self,y_test_arr, pred_arr)
+
+
+
         print('Prediction successful')
+        return 'Overall test accuracy:', testset_acc, 'Overall test loss:',test_loss
 
     def save_model(self):
         if not os.path.exists(MODEL_PATH_DIR):
@@ -190,4 +206,4 @@ class FFNTrainer:
         outfile = open("prediction_losses.txt", "r")
         file1.write(outfile.read())
         file1.close()
-        print('Save successful')
+        print('Predictions saved')
