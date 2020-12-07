@@ -50,11 +50,12 @@ def main():
         print(scores)
 
     elif args.transformer_train:
+        fraction = 4
         model = nn.Transformer(
-            d_model=100, nhead=2, num_encoder_layers=1,
+            d_model=21920 // fraction, nhead=2, num_encoder_layers=1,
             num_decoder_layers=1, dim_feedforward=100)
         trainer = TransformerTrainer(model)
-        trainer.start_loop()
+        trainer.start_loop(fraction)
 
 
 if __name__ == "__main__":
