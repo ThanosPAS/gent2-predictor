@@ -9,7 +9,7 @@ from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, M
     INIT_METHOD, USE_CUDA, EPOCHS, MODEL_PATH, MODEL_PATH_DIR
 
 
-class Trainer:
+class FFNTrainer:
     def __init__(self, model=None):
         self.model = model
         self.model.to(DEVICE)
@@ -52,7 +52,7 @@ class Trainer:
             val_batch_loss = 0
             train_epoch_acc[epoch] = 0
             val_epoch_acc[epoch] = 0
-            running_train_acc, running_val_acc = [],[]
+            running_train_acc, running_val_acc = [], []
 
             with tqdm(total=len(self.train_loader.dataset),
                       desc=f"[Epoch {epoch + 1:3d}/{EPOCHS}]") as pbar:
@@ -67,7 +67,6 @@ class Trainer:
                     personal_train_acc = self.multi_acc(pred, y_train)
                     running_train_acc.append(personal_train_acc)
 
-
                     self.optimizer.zero_grad()
                     t_loss.backward()
                     self.optimizer.step()
@@ -78,7 +77,7 @@ class Trainer:
                     pbar.update(x_train.shape[0])
 
                 trainset_acc = sum(running_train_acc) / len(running_train_acc)
-                trainset_acc = round(trainset_acc,3) * 100
+                trainset_acc = round(trainset_acc, 3) * 100
                 train_epoch_acc[epoch] += trainset_acc
 
                 train_loss.append(train_batch_loss / len(self.train_loader))
@@ -102,8 +101,8 @@ class Trainer:
                     valset_acc = round(valset_acc, 3) * 100
                     val_epoch_acc[epoch] += valset_acc
 
-
                     valid_loss.append(val_batch_loss / len(self.val_loader))
+
                 pbar.set_postfix({
                     'loss'    : train_loss[epoch],
                     'val_loss': valid_loss[epoch],
@@ -136,9 +135,10 @@ class Trainer:
         else:
             long_tensor = torch.LongTensor
             float_tensor = torch.FloatTensor
+
         test_batch_loss = 0
         test_loss = 0
-        pred_labels, loss_list = [],[]
+        pred_labels, loss_list = [], []
 
         with torch.no_grad():
             self.model.eval()
@@ -161,15 +161,13 @@ class Trainer:
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
                     pred_labels.append(y_pred_tags)
-                    #print('Predicted cancer type for patient ', patient[person], 'is: ', pred_labels[person])
+                    # print('Predicted cancer type for patient ', patient[person], 'is: ', pred_labels[person])
                 i += 1
-            test_loss= test_batch_loss / len(self.val_loader)
-            test_loss =round(test_loss, 2) * 100
+            test_loss = test_batch_loss / len(self.val_loader)
+            test_loss = round(test_loss, 2) * 100
 
             self.save_predictions(loss_list)
-        return 'Prediction successful'
-
-
+        print('Prediction successful')
 
     def save_model(self):
         if not os.path.exists(MODEL_PATH_DIR):
@@ -177,9 +175,8 @@ class Trainer:
 
         torch.save(self.model.state_dict(), MODEL_PATH)
 
-
-    def save_predictions(self,loss_list):
-        save_path =MODEL_PATH_DIR
+    def save_predictions(self, loss_list):
+        save_path = MODEL_PATH_DIR
         if not os.path.exists(MODEL_PATH_DIR):
             os.makedirs(MODEL_PATH_DIR)
 
@@ -187,17 +184,10 @@ class Trainer:
         prediction_losses = os.path.join(save_path, file_name + ".txt")
 
         file1 = open(prediction_losses, "w")
-        '''
-        report = open('prediction_losses.txt', 'w')
-        
-        with report as f:
-            for item in loss_list:
-                f.write(item)
-                '''
+
         with open("prediction_losses.txt", "w") as outfile:
             outfile.write("\n".join(str(item) for item in loss_list))
-        outfile =open("prediction_losses.txt", "r")
+        outfile = open("prediction_losses.txt", "r")
         file1.write(outfile.read())
         file1.close()
-        return 'Save successful'
-
+        print('Save successful')
