@@ -45,7 +45,7 @@ def main():
     elif args.predict_on_ffn:
         model = FFN()
         model.load_state_dict(torch.load(MODEL_PATH))
-        trainer = TransformerTrainer(model)
+        trainer = FFNTrainer(model)
         scores = trainer.predict()
         print(scores)
 
@@ -53,7 +53,7 @@ def main():
         model = nn.Transformer(
             d_model=100, nhead=2, num_encoder_layers=1,
             num_decoder_layers=1, dim_feedforward=100)
-        trainer = Trainer(model)
+        trainer = TransformerTrainer(model)
         trainer.start_loop()
 
 
