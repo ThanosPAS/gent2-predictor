@@ -33,7 +33,7 @@ class TransformerTrainer:
         init_function(m.weight)
         nn.init.constant_(m.bias, 0)
 
-    def start_loop(self):
+    def start_loop(self, fraction):
         print('Training\n')
         if USE_CUDA:
             self.model.cuda()
@@ -59,10 +59,24 @@ class TransformerTrainer:
 
                 for idx_batch, person in enumerate(self.train_loader):
 
-                    x_train = person['data'].type(float_tensor)
-                    y_train = person['cancer_type'].type(long_tensor)
+                    x_train = person['data'].tolist()[0][::fraction]
+                    x_train = torch.tensor(x_train)
+                    x_train = x_train.unsqueeze(0).unsqueeze(0).type(float_tensor)
 
-                    pred = self.model(x_train)
+                    y_train = person['cancer_type']
+                    y_train = y_train.tolist()[0]
+                    y_train = torch.full(size=(1, 1, 21920//fraction), fill_value=y_train).type(long_tensor)
+
+                    # S - source sequence length
+                    # T - target sequence length
+                    # N - batch size
+                    # E - feature number
+
+                    # src(S, N, E) -> (1, 1, 21920)
+                    # tgt(T, N, E) -> (1, 1, 21920)
+                    # E = d_model
+
+                    pred = self.model(x_train, y_train)
                     t_loss = self.criterion(pred, y_train)
                     personal_train_acc = self.multi_acc(pred, y_train)
                     running_train_acc.append(personal_train_acc)
