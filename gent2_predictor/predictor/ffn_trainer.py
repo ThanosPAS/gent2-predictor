@@ -15,6 +15,7 @@ class FFNTrainer(Trainer):
         super().__init__()
         self.model = model
         self.model.to(DEVICE)
+        self.model_name = ''
         # self.model.apply(self.init_weights)
 
         self.criterion = nn.CrossEntropyLoss()
@@ -112,7 +113,7 @@ class FFNTrainer(Trainer):
                     'val_acc' : val_epoch_acc[epoch]
                 })
 
-        self.save_model(self.model, 'ffn')
+        self.model_name = self.save_model(self.model, 'ffn')
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
@@ -128,8 +129,9 @@ class FFNTrainer(Trainer):
 
         return acc
 
-    def predict(self):
+    def predict(self, model_filename):
         print('Predicting\n')
+        self.model_name = model_filename
         if USE_CUDA:
             self.model.cuda()
             long_tensor = torch.cuda.LongTensor
@@ -179,7 +181,8 @@ class FFNTrainer(Trainer):
 
             self.save_predictions(loss_list)
 
-            Plotter.plot_cm(self, y_test_arr, pred_arr)
+            plotter = Plotter(model_filename)
+            plotter.plot_cm(y_test_arr, pred_arr)
 
         print('Prediction successful')
         print('Overall test accuracy:', testset_acc, 'Overall test loss:', test_loss)

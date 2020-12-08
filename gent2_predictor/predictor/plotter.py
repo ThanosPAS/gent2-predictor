@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -5,10 +7,12 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve, auc, matthews_corrcoef
 
+from gent2_predictor.settings import PLOTS_PATH_DIR
+
 
 class Plotter:
-    def __init__(self):
-        pass
+    def __init__(self, model_name):
+        self.model_name = model_name
 
     def plot_losses(self, train_loss, valid_loss, burn_in=20):
         plt.figure(figsize=(15, 4))
@@ -24,6 +28,8 @@ class Plotter:
         plt.legend(frameon=False)
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'losses_{self.model_name}.png')
+        plt.savefig(plot_path)
         plt.show()
 
     def plot_roc_curve(self, test, pred):
@@ -45,6 +51,8 @@ class Plotter:
         plt.ylim([0, 1])
         plt.ylabel('True Positive Rate')
         plt.xlabel('False Positive Rate')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'roc_{self.model_name}.png')
+        plt.savefig(plot_path)
         plt.show()
 
         return y_test_class, y_pred_class
@@ -56,6 +64,8 @@ class Plotter:
         plt.legend(loc='lower right')
         plt.ylabel('Predicted')
         plt.xlabel('Validation targets')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'mcc_{self.model_name}.png')
+        plt.savefig(plot_path)
         plt.show()
 
     def stats(self):
@@ -93,3 +103,7 @@ class Plotter:
         cm.columns.name = 'Predicted'
         fig, ax = plt.subplots(figsize=figsize)
         sns.heatmap(cm, cmap="YlGnBu", annot=annot, fmt='', ax=ax)
+
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'losses_{self.model_name}.png')
+        plt.savefig(plot_path)
+        plt.show()

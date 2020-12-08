@@ -11,19 +11,15 @@ class Trainer:
         pass
 
     def save_model(self, model, model_type):
-        if not os.path.exists(MODEL_PATH_DIR):
-            os.makedirs(MODEL_PATH_DIR)
-
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        model_path = f'{model_type}_{timestamp}.pth'
-        model_path = os.path.join(MODEL_PATH_DIR, model_path)
+        model_name = f'{model_type}_{timestamp}.pth'
+        model_path = os.path.join(MODEL_PATH_DIR, model_name)
 
         torch.save(model.state_dict(), model_path)
 
-    def save_predictions(self, loss_list):
-        if not os.path.exists(MODEL_PATH_DIR):
-            os.makedirs(MODEL_PATH_DIR)
+        return model_name
 
+    def save_predictions(self, loss_list):
         file_name = f'prediction_losses_{MODEL_FILENAME}.txt'
         file = os.path.join(MODEL_PATH_DIR, file_name)
 

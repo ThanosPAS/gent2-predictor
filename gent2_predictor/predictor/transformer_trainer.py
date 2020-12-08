@@ -182,4 +182,4 @@ class TransformerTrainer(Trainer):
 
             self.save_predictions(loss_list)
 
-        return 'Prediction successful'
+        print('Prediction successful')
