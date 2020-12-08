@@ -76,3 +76,34 @@ class FFN(nn.Module):
         x = self.linear_out(x)
 
         return x
+
+
+class baseline_FFN(nn.Module):
+    def __init__(self):
+        super(baseline_FFN, self).__init__()
+        self.dropout = nn.Dropout(0.2)
+        self.layernorm0 = nn.LayerNorm(21920)
+        # 1st hidden layer
+        self.linear_1 = nn.Linear(21920, 5000)
+        self.layernorm1 = nn.LayerNorm(5000)
+        self.relu1 = nn.ReLU()
+
+        # 2nd hidden layer
+        self.linear_2 = nn.Linear(5000, 500)
+        self.layernorm2 = nn.LayerNorm(500)
+        self.relu2 = nn.ReLU()
+
+        # Output layer
+        self.linear_out = nn.Linear(500, 6)
+
+    def forward(self, x):
+
+        x = self.layernorm0(x)
+
+        x = self.relu1(self.linear_1(x))
+
+        x = self.relu2(self.linear_2(x))
+
+        x = self.linear_out(x)
+
+        return x

@@ -19,7 +19,7 @@ MODEL_PATH = os.path.join(MODEL_PATH_DIR, 'model.pth')
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 USE_CUDA = torch.cuda.is_available()
 
-EPOCHS = 3
+EPOCHS = 100
 LEARNING_RATE = 0.0001
 
 
@@ -44,3 +44,6 @@ TARGET_LABELS = {
     'STOMACH': 4,
     'NORMAL' : 5
 }
+
+#MODEL_SELECTOR = 'FULL_FFN'
+MODEL_SELECTOR = 'BASELINE_FFN'
