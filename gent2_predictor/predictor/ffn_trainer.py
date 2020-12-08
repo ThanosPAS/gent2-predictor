@@ -7,7 +7,7 @@ from gent2_predictor.data_parser.data_parser import DataParser
 from gent2_predictor.predictor.plotter import Plotter
 from gent2_predictor.predictor.trainer import Trainer
 from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, MOMENTUM, \
-    INIT_METHOD, USE_CUDA, EPOCHS
+    INIT_METHOD, USE_CUDA, EPOCHS,MODEL_SELECTOR
 
 
 class FFNTrainer(Trainer):
@@ -112,8 +112,11 @@ class FFNTrainer(Trainer):
                     'acc'     : train_epoch_acc[epoch],
                     'val_acc' : val_epoch_acc[epoch]
                 })
+        if MODEL_SELECTOR =='FULL_FFN':
+            self.model_name = self.save_model(self.model, 'ffn')
+        else:
+            self.model_name = self.save_model(self.model, 'baselineFFN')
 
-        self.model_name = self.save_model(self.model, 'ffn')
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 

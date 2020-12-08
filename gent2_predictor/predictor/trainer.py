@@ -11,7 +11,7 @@ class Trainer:
         pass
 
     def save_model(self, model, model_type):
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H.%M.%S')
         model_name = f'{model_type}_{timestamp}.pth'
         model_path = os.path.join(MODEL_PATH_DIR, model_name)
 

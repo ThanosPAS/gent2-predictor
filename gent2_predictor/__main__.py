@@ -7,7 +7,7 @@ from gent2_predictor.data_parser.data_parser import DataParser
 from gent2_predictor.predictor.ffn import FFN,Baseline_FFN
 from gent2_predictor.predictor.ffn_trainer import FFNTrainer
 from gent2_predictor.predictor.transformer_trainer import TransformerTrainer
-from gent2_predictor.settings import MODEL_PATH,MODEL_SELECTOR
+from gent2_predictor.settings import MODEL_PATH,MODEL_SELECTOR,MODEL_FILENAME
 
 
 def main():
@@ -48,11 +48,18 @@ def main():
             trainer.start_loop()
 
     elif args.predict_on_ffn:
-        model = FFN()
-        model.load_state_dict(torch.load(MODEL_PATH))
-        trainer = FFNTrainer(model)
-        scores = trainer.predict()
-        print(scores)
+        if MODEL_FILENAME.startswith('b'):
+            model = Baseline_FFN()
+            model.load_state_dict(torch.load(MODEL_PATH))
+            trainer = FFNTrainer(model)
+            scores = trainer.predict(MODEL_FILENAME)
+            print(scores)
+        else:
+            model = FFN()
+            model.load_state_dict(torch.load(MODEL_PATH))
+            trainer = FFNTrainer(model)
+            scores = trainer.predict(MODEL_FILENAME)
+            print(scores)
 
     elif args.transformer_train:
         fraction = 4
