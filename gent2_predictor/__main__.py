@@ -49,19 +49,19 @@ def main():
             trainer.start_loop()
 
     elif args.predict_on_ffn:
-        MODEL_FILENAME, MODEL_PATH = create_pathname()
-        if MODEL_FILENAME.startswith('b'):
+        model_filename, model_path = create_pathname()
+        if model_filename.startswith('b'):
             model = Baseline_FFN()
-            model.load_state_dict(torch.load(MODEL_PATH))
+            model.load_state_dict(torch.load(model_path))
             trainer = FFNTrainer(model)
-            scores = trainer.predict(MODEL_FILENAME)
-            print(scores)
+            scores = trainer.predict(model_filename)
+
 
         else:
             model = FFN()
-            model.load_state_dict(torch.load(MODEL_PATH))
+            model.load_state_dict(torch.load(model_path))
             trainer = FFNTrainer(model)
-            scores = trainer.predict(MODEL_FILENAME)
+            scores = trainer.predict(model_filename)
 
 
     elif args.transformer_train:

@@ -32,7 +32,7 @@ if not os.path.exists(PREDICTIONS_PATH_DIR):
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 USE_CUDA = torch.cuda.is_available()
 
-EPOCHS = 3
+EPOCHS = 500
 LEARNING_RATE = 0.0001
 
 # OPTIMIZER = 'ADAM'

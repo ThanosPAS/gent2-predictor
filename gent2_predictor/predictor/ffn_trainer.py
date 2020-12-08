@@ -184,9 +184,9 @@ class FFNTrainer(Trainer):
             pred_arr = np.asarray(pred_labels)
             y_test_arr = np.asarray(y_test_list)
 
-            self.save_predictions(loss_list)
+            self.save_predictions(self.model_name,loss_list)
 
-            plotter = Plotter(model_filename)
+            plotter = Plotter(self.model_name)
             plotter.plot_cm(y_test_arr, pred_arr)
 
         print('Prediction successful')

@@ -20,9 +20,9 @@ class Trainer:
 
         return model_name
 
-    def save_predictions(self, loss_list):
-        model_name=input('Predictions filename(preferably same as model name):')
-        file_name = f'prediction_losses_{model_name}.txt'
+    def save_predictions(self, filename, loss_list):
+        self.model_name=filename
+        file_name = f'prediction_losses_{self.model_name}.txt'
         file = os.path.join(PREDICTIONS_PATH_DIR, file_name)
 
 
