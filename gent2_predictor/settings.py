@@ -14,7 +14,15 @@ STRUCTURE_PATH = os.path.join(RAW_DATA_DIR, 'Dataset structure.xlsx')
 CANCER_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data')
 
 MODEL_PATH_DIR = os.path.join(DATA_DIR, 'models')
-MODEL_PATH = os.path.join(MODEL_PATH_DIR, 'model.pth')
+MODEL_FILENAME = ''
+
+if not MODEL_FILENAME:
+    raise NotImplementedError('You have to fill the model name in settings.py!')
+
+MODEL_PATH = os.path.join(
+    MODEL_PATH_DIR,
+    MODEL_FILENAME
+)
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 USE_CUDA = torch.cuda.is_available()
@@ -22,8 +30,7 @@ USE_CUDA = torch.cuda.is_available()
 EPOCHS = 3
 LEARNING_RATE = 0.0001
 
-
-#OPTIMIZER = 'ADAM'
+# OPTIMIZER = 'ADAM'
 OPTIMIZER = 'SGD'
 
 INIT_METHOD = 'xavier_uniform_'
