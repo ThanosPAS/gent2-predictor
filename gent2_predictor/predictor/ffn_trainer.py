@@ -118,6 +118,8 @@ class FFNTrainer(Trainer):
         else:
             self.model_name = self.save_model(self.model, 'baselineFFN')
 
+        Plotter.plot_losses(self,train_loss, valid_loss,burn_in =1)
+        self.save_predictions(self.model_name, loss_list=None, train_loss=train_loss, valid_loss=valid_loss, mode=False)
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
@@ -184,10 +186,11 @@ class FFNTrainer(Trainer):
             pred_arr = np.asarray(pred_labels)
             y_test_arr = np.asarray(y_test_list)
 
-            self.save_predictions(self.model_name,loss_list)
+            self.save_predictions(self.model_name,loss_list, train_loss=None, valid_loss=None, mode=True)
 
             plotter = Plotter(self.model_name)
             plotter.plot_cm(y_test_arr, pred_arr)
+            #plotter.plot_roc_curve(y_test_arr,pred_arr)
 
         print('Prediction successful')
         print('Overall test accuracy:', testset_acc, 'Overall test loss:', test_loss)

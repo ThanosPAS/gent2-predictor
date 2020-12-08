@@ -15,7 +15,7 @@ class Plotter:
         self.model_name = model_name
 
     def plot_losses(self, train_loss, valid_loss, burn_in=20):
-        plt.figure(figsize=(15, 4))
+        plt.figure(figsize=(15, 8))
         plt.plot(list(range(burn_in, len(train_loss))), train_loss[burn_in:],
                  label='Training loss')
         plt.plot(list(range(burn_in, len(valid_loss))), valid_loss[burn_in:],
