@@ -1,19 +1,21 @@
-import os
-import os.path
-import torch
 import numpy as np
+import torch
 import torch.nn as nn
 from tqdm import tqdm
-from gent2_predictor.predictor.plotter import Plotter
+
 from gent2_predictor.data_parser.data_parser import DataParser
+from gent2_predictor.predictor.plotter import Plotter
+from gent2_predictor.predictor.trainer import Trainer
 from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, MOMENTUM, \
-    INIT_METHOD, USE_CUDA, EPOCHS, MODEL_PATH, MODEL_PATH_DIR, TARGET_LABELS
+    INIT_METHOD, USE_CUDA, EPOCHS
 
 
-class FFNTrainer:
+class FFNTrainer(Trainer):
     def __init__(self, model=None):
+        super().__init__()
         self.model = model
         self.model.to(DEVICE)
+        self.model_name = ''
         # self.model.apply(self.init_weights)
 
         self.criterion = nn.CrossEntropyLoss()
@@ -111,7 +113,7 @@ class FFNTrainer:
                     'val_acc' : val_epoch_acc[epoch]
                 })
 
-        self.save_model()
+        self.model_name = self.save_model(self.model, 'ffn')
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
@@ -127,8 +129,9 @@ class FFNTrainer:
 
         return acc
 
-    def predict(self):
+    def predict(self, model_filename):
         print('Predicting\n')
+        self.model_name = model_filename
         if USE_CUDA:
             self.model.cuda()
             long_tensor = torch.cuda.LongTensor
@@ -138,7 +141,7 @@ class FFNTrainer:
             float_tensor = torch.FloatTensor
         test_batch_loss = 0
         test_loss = 0
-        pred_labels, loss_list, running_test_acc,y_test_list = [], [], [],[]
+        pred_labels, loss_list, running_test_acc, y_test_list = [], [], [], []
 
         with torch.no_grad():
             self.model.eval()
@@ -157,7 +160,7 @@ class FFNTrainer:
                     loss_str = str(loss_cast)
                     loss_list.append(loss_str)
                     y_test_list.append(y_test.item())
-                    #y_test_cast = y_test_list.tolist()
+                    # y_test_cast = y_test_list.tolist()
                     pbar.update(x_test.shape[0])
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
@@ -166,7 +169,7 @@ class FFNTrainer:
                     testset_acc = sum(running_test_acc) / len(running_test_acc)
                     testset_acc = round(testset_acc, 3) * 100
                     pbar.set_postfix({
-                        'loss': t_loss.item(),
+                        'loss'                : t_loss.item(),
                         'accumulated_test_acc': testset_acc
                     })
 
@@ -175,35 +178,11 @@ class FFNTrainer:
             test_loss = round(test_loss, 2) * 100
             pred_arr = np.asarray(pred_labels)
             y_test_arr = np.asarray(y_test_list)
+
             self.save_predictions(loss_list)
 
-
-            Plotter.plot_cm(self,y_test_arr, pred_arr)
-
-
+            plotter = Plotter(model_filename)
+            plotter.plot_cm(y_test_arr, pred_arr)
 
         print('Prediction successful')
-        return 'Overall test accuracy:', testset_acc, 'Overall test loss:',test_loss
-
-    def save_model(self):
-        if not os.path.exists(MODEL_PATH_DIR):
-            os.makedirs(MODEL_PATH_DIR)
-
-        torch.save(self.model.state_dict(), MODEL_PATH)
-
-    def save_predictions(self, loss_list):
-        save_path = MODEL_PATH_DIR
-        if not os.path.exists(MODEL_PATH_DIR):
-            os.makedirs(MODEL_PATH_DIR)
-
-        file_name = 'prediction_losses'
-        prediction_losses = os.path.join(save_path, file_name + ".txt")
-
-        file1 = open(prediction_losses, "w")
-
-        with open("prediction_losses.txt", "w") as outfile:
-            outfile.write("\n".join(str(item) for item in loss_list))
-        outfile = open("prediction_losses.txt", "r")
-        file1.write(outfile.read())
-        file1.close()
-        print('Predictions saved')
+        print('Overall test accuracy:', testset_acc, 'Overall test loss:', test_loss)

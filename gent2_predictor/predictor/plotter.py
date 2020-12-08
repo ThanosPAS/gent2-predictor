@@ -1,20 +1,25 @@
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import seaborn as sns
-from sklearn.metrics import roc_curve, auc, matthews_corrcoef
-from sklearn.metrics import confusion_matrix
+import os
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_curve, auc, matthews_corrcoef
+
+from gent2_predictor.settings import PLOTS_PATH_DIR
 
 
 class Plotter:
-    def __init__(self):
-        pass
+    def __init__(self, model_name):
+        self.model_name = model_name
 
     def plot_losses(self, train_loss, valid_loss, burn_in=20):
         plt.figure(figsize=(15, 4))
-        plt.plot(list(range(burn_in, len(train_loss))), train_loss[burn_in:], label='Training loss')
-        plt.plot(list(range(burn_in, len(valid_loss))), valid_loss[burn_in:], label='Validation loss')
+        plt.plot(list(range(burn_in, len(train_loss))), train_loss[burn_in:],
+                 label='Training loss')
+        plt.plot(list(range(burn_in, len(valid_loss))), valid_loss[burn_in:],
+                 label='Validation loss')
 
         # find position of lowest validation loss
         minposs = valid_loss.index(min(valid_loss)) + 1
@@ -23,12 +28,13 @@ class Plotter:
         plt.legend(frameon=False)
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'losses_{self.model_name}.png')
+        plt.savefig(plot_path)
         plt.show()
 
-
     def plot_roc_curve(self, test, pred):
-        #Define where pred comes from
-        #I am not sure if the threshold should be 50%
+        # Define where pred comes from
+        # I am not sure if the threshold should be 50%
         y_test_class = np.where(test.flatten() >= 0.5, 1, 0)
         y_pred_class = np.where(pred.flatten() >= 0.5, 1, 0)
 
@@ -45,20 +51,22 @@ class Plotter:
         plt.ylim([0, 1])
         plt.ylabel('True Positive Rate')
         plt.xlabel('False Positive Rate')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'roc_{self.model_name}.png')
+        plt.savefig(plot_path)
         plt.show()
 
         return y_test_class, y_pred_class
 
-
-
-    def plot_mcc(self, test,pred,mcc):
+    def plot_mcc(self, test, pred, mcc):
         plt.title('Matthews Correlation Coefficient')
-        plt.scatter(test.flatten().detach().numpy(), pred.flatten().detach().numpy(), label='MCC = %0.2f' % mcc)
+        plt.scatter(test.flatten().detach().numpy(), pred.flatten().detach().numpy(),
+                    label='MCC = %0.2f' % mcc)
         plt.legend(loc='lower right')
         plt.ylabel('Predicted')
         plt.xlabel('Validation targets')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'mcc_{self.model_name}.png')
+        plt.savefig(plot_path)
         plt.show()
-
 
     def stats(self):
         sns.countplot(x='Cancer types', data=output_classes)
@@ -69,11 +77,11 @@ class Plotter:
         print(
             f'Epoch {e + 0:03}: | Train Acc: {train_epoch_acc / len(x_train):.3f}| Val Acc: {val_epoch_acc / len(x_val):.3f}')
 
-    def stat_significance(y,pred):
+    def stat_significance(y, pred):
         mcc = matthews_corrcoef(y, pred)
         raise NotImplementedError
 
-    def plot_cm(self,y_test_arr, pred_arr, figsize=(10, 10)):
+    def plot_cm(self, y_test_arr, pred_arr, figsize=(10, 10)):
         cm = confusion_matrix(y_test_arr, pred_arr, labels=np.unique(y_test_arr))
         cm_sum = np.sum(cm, axis=1, keepdims=True)
         cm_perc = cm / cm_sum.astype(float) * 100
@@ -96,5 +104,6 @@ class Plotter:
         fig, ax = plt.subplots(figsize=figsize)
         sns.heatmap(cm, cmap="YlGnBu", annot=annot, fmt='', ax=ax)
 
-
-
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'losses_{self.model_name}.png')
+        plt.savefig(plot_path)
+        plt.show()
