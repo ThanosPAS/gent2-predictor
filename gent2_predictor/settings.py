@@ -1,5 +1,6 @@
 import os
 
+
 import torch
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,13 +15,7 @@ STRUCTURE_PATH = os.path.join(RAW_DATA_DIR, 'Dataset structure.xlsx')
 CANCER_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data')
 
 MODEL_PATH_DIR = os.path.join(DATA_DIR, 'models')
-#MODEL_FILENAME = 'baselineffn_2020-12-08_17.12.19_500epochs(15-15).pth'
-MODEL_FILENAME = input("Enter the model you want to predict on (e.g.: 'ffn_2020-12-08 12:18:22.pth'):")  # e.g.: 'ffn_2020-12-08 12:18:22.pth'
 
-MODEL_PATH = os.path.join(
-    MODEL_PATH_DIR,
-    MODEL_FILENAME
-)
 
 PLOTS_PATH_DIR = os.path.join(DATA_DIR, 'plots')
 PREDICTIONS_PATH_DIR = os.path.join(DATA_DIR, 'predictions')
@@ -62,5 +57,16 @@ TARGET_LABELS = {
     'NORMAL' : 5
 }
 
-#MODEL_SELECTOR = 'FULL_FFN'
-MODEL_SELECTOR = 'BASELINE_FFN'
+MODEL_SELECTOR = 'FULL_FFN'
+#MODEL_SELECTOR = 'BASELINE_FFN'
+
+
+
+def create_pathname():
+
+    model_name = input("Enter the model you want to predict on (e.g.: 'ffn_2020-12-08 12:18:22.pth'):")
+    model_path = os.path.join(
+        MODEL_PATH_DIR,
+        model_name
+    )
+    return model_name, model_path

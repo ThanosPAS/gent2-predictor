@@ -10,6 +10,7 @@ from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, M
     INIT_METHOD, USE_CUDA, EPOCHS,MODEL_SELECTOR
 
 
+
 class FFNTrainer(Trainer):
     def __init__(self, model=None):
         super().__init__()
@@ -132,7 +133,9 @@ class FFNTrainer(Trainer):
 
         return acc
 
-    def predict(self, model_filename):
+
+
+    def predict(self,model_filename):
         print('Predicting\n')
         self.model_name = model_filename
         if USE_CUDA:
