@@ -22,12 +22,16 @@ MODEL_PATH = os.path.join(
 )
 
 PLOTS_PATH_DIR = os.path.join(DATA_DIR, 'plots')
+PREDICTIONS_PATH_DIR = os.path.join(DATA_DIR, 'predictions')
 
 if not os.path.exists(MODEL_PATH_DIR):
     os.makedirs(MODEL_PATH_DIR)
 
 if not os.path.exists(PLOTS_PATH_DIR):
     os.makedirs(PLOTS_PATH_DIR)
+
+if not os.path.exists(PREDICTIONS_PATH_DIR):
+    os.makedirs(PREDICTIONS_PATH_DIR)
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 USE_CUDA = torch.cuda.is_available()
