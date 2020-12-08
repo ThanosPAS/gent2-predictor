@@ -78,7 +78,7 @@ class FFN(nn.Module):
         return x
 
 
-class baseline_FFN(nn.Module):
+class Baseline_FFN(nn.Module):
     def __init__(self):
         super(baseline_FFN, self).__init__()
         self.dropout = nn.Dropout(0.2)
@@ -98,7 +98,7 @@ class baseline_FFN(nn.Module):
 
     def forward(self, x):
 
-        x = self.layernorm0(x)
+        #x = self.layernorm0(x)
 
         x = self.relu1(self.linear_1(x))
 

@@ -160,7 +160,6 @@ class FFNTrainer(Trainer):
                     loss_str = str(loss_cast)
                     loss_list.append(loss_str)
                     y_test_list.append(y_test.item())
-                    # y_test_cast = y_test_list.tolist()
                     pbar.update(x_test.shape[0])
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)

@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 from gent2_predictor.data_parser.data_parser import DataParser
-from gent2_predictor.predictor.ffn import FFN,baseline_FFN
+from gent2_predictor.predictor.ffn import FFN,Baseline_FFN
 from gent2_predictor.predictor.ffn_trainer import FFNTrainer
 from gent2_predictor.predictor.transformer_trainer import TransformerTrainer
 from gent2_predictor.settings import MODEL_PATH,MODEL_SELECTOR
@@ -43,7 +43,7 @@ def main():
             trainer = FFNTrainer(model)
             trainer.start_loop()
         else:
-            model = baseline_FFN()
+            model = Baseline_FFN()
             trainer = FFNTrainer(model)
             trainer.start_loop()
 
