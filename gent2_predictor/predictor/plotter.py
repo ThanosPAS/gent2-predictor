@@ -7,7 +7,7 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve, auc, matthews_corrcoef
 
-from gent2_predictor.settings import PLOTS_PATH_DIR
+from gent2_predictor.settings import PLOTS_PATH_DIR, TARGET_LABELS
 
 
 class Plotter:
@@ -98,7 +98,7 @@ class Plotter:
                     annot[i, j] = ''
                 else:
                     annot[i, j] = '%.1f%%\n%d' % (p, c)
-        cm = pd.DataFrame(cm, index=np.unique(y_test_arr), columns=np.unique(y_test_arr))
+        cm = pd.DataFrame(cm, index=TARGET_LABELS.keys(), columns=TARGET_LABELS.keys())
         cm.index.name = 'Actual'
         cm.columns.name = 'Predicted'
         fig, ax = plt.subplots(figsize=figsize)
