@@ -4,10 +4,10 @@ import torch
 import torch.nn as nn
 
 from gent2_predictor.data_parser.data_parser import DataParser
-from gent2_predictor.predictor.ffn import FFN,Baseline_FFN
+from gent2_predictor.predictor.ffn import FFN, Baseline_FFN
 from gent2_predictor.predictor.ffn_trainer import FFNTrainer
 from gent2_predictor.predictor.transformer_trainer import TransformerTrainer
-from gent2_predictor.settings import create_pathname, MODEL_SELECTOR
+from gent2_predictor.settings import create_pathname, MODEL_SELECTOR, USE_FULL_DATA
 
 
 def main():
@@ -35,17 +35,18 @@ def main():
     args = parser.parse_args()
 
     if args.parse:
-        DataParser().parse_structure()
-        DataParser().pickle_data()
+        parser = DataParser()
+        parser.parse_structures()
+        parser.pickle_data()
 
     elif args.ffn_train:
-        if MODEL_SELECTOR =='FULL_FFN':
+        if MODEL_SELECTOR == 'FULL_FFN':
             model = FFN()
-            trainer = FFNTrainer(model)
+            trainer = FFNTrainer(model, USE_FULL_DATA)
             trainer.start_loop()
         else:
             model = Baseline_FFN()
-            trainer = FFNTrainer(model)
+            trainer = FFNTrainer(model, USE_FULL_DATA)
             trainer.start_loop()
 
     elif args.predict_on_ffn:
@@ -53,14 +54,13 @@ def main():
         if model_filename.startswith('b'):
             model = Baseline_FFN()
             model.load_state_dict(torch.load(model_path))
-            trainer = FFNTrainer(model)
+            trainer = FFNTrainer(model, USE_FULL_DATA)
             scores = trainer.predict(model_filename)
-
 
         else:
             model = FFN()
             model.load_state_dict(torch.load(model_path))
-            trainer = FFNTrainer(model)
+            trainer = FFNTrainer(model, USE_FULL_DATA)
             scores = trainer.predict(model_filename)
 
 

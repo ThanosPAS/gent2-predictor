@@ -7,12 +7,12 @@ from gent2_predictor.data_parser.data_parser import DataParser
 from gent2_predictor.predictor.plotter import Plotter
 from gent2_predictor.predictor.trainer import Trainer
 from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, MOMENTUM, \
-    INIT_METHOD, USE_CUDA, EPOCHS,MODEL_SELECTOR
-
+    INIT_METHOD, USE_CUDA, EPOCHS, MODEL_SELECTOR
+from gent2_predictor.settings import PLOTS_PATH_DIR
 
 
 class FFNTrainer(Trainer):
-    def __init__(self, model=None):
+    def __init__(self, model=None, full_data=False):
         super().__init__()
         self.model = model
         self.model.to(DEVICE)
@@ -28,7 +28,7 @@ class FFNTrainer(Trainer):
             self.optimizer = torch.optim.SGD(
                 self.model.parameters(), lr=LEARNING_RATE, weight_decay=L2_REG, momentum=MOMENTUM)
 
-        self.train_loader, self.val_loader, self.test_loader = DataParser().data_loading()
+        self.train_loader, self.val_loader, self.test_loader = DataParser().data_loading(full_data)
 
     @staticmethod
     def init_weights(m):
@@ -67,6 +67,11 @@ class FFNTrainer(Trainer):
                     y_train = person['cancer_type'].type(long_tensor)
 
                     pred = self.model(x_train)
+                    from torchviz import make_dot
+                    import os
+                    make_dot(pred, params=dict(list(self.model.named_parameters()))).render(
+                        os.path.join(PLOTS_PATH_DIR, 'net'), format="pdf")
+                    return
                     t_loss = self.criterion(pred, y_train)
                     personal_train_acc = self.multi_acc(pred, y_train)
                     running_train_acc.append(personal_train_acc)
@@ -113,13 +118,15 @@ class FFNTrainer(Trainer):
                     'acc'     : train_epoch_acc[epoch],
                     'val_acc' : val_epoch_acc[epoch]
                 })
-        if MODEL_SELECTOR =='FULL_FFN':
+        if MODEL_SELECTOR == 'FULL_FFN':
             self.model_name = self.save_model(self.model, 'ffn')
         else:
             self.model_name = self.save_model(self.model, 'baselineFFN')
 
-        Plotter.plot_losses(self,train_loss, valid_loss,burn_in =1)
-        self.save_predictions(self.model_name, loss_list=None, train_loss=train_loss, valid_loss=valid_loss, mode=False)
+        plotter = Plotter(self.model_name)
+        plotter.plot_losses(train_loss, valid_loss)
+        self.save_predictions(self.model_name, loss_list=None, train_loss=train_loss,
+                              valid_loss=valid_loss, mode=False)
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
@@ -135,11 +142,10 @@ class FFNTrainer(Trainer):
 
         return acc
 
-
-
-    def predict(self,model_filename):
+    def predict(self, model_filename):
         print('Predicting\n')
         self.model_name = model_filename
+
         if USE_CUDA:
             self.model.cuda()
             long_tensor = torch.cuda.LongTensor
@@ -147,6 +153,7 @@ class FFNTrainer(Trainer):
         else:
             long_tensor = torch.LongTensor
             float_tensor = torch.FloatTensor
+
         test_batch_loss = 0
         test_loss = 0
         pred_labels, loss_list, running_test_acc, y_test_list = [], [], [], []
@@ -160,6 +167,7 @@ class FFNTrainer(Trainer):
                     x_test = person['data'].type(float_tensor)
                     y_test = person['cancer_type'].type(long_tensor)
                     pred = self.model(x_test)
+
                     t_loss = self.criterion(pred, y_test)
                     personal_test_acc = self.multi_acc(pred, y_test)
                     running_test_acc.append(personal_test_acc)
