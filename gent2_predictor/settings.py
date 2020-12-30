@@ -72,3 +72,6 @@ def create_pathname():
         model_name
     )
     return model_name, model_path
+
+
+LANDMARK_URL = 'https://api.clue.io/api/genes?filter={%22where%22:{%22l1000_type%22:%22landmark%22}}&user_key=18c46f38bfd42d8c229d1866dced8a89'

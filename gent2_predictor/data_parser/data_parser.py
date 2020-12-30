@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, random_split
 
 from gent2_predictor.data_parser.gent2_dataset import Gent2Dataset
 from gent2_predictor.settings import PROCESSED_DATA_DIR, \
-    FULL_DATA_DIR, LANDMARKS_DATA_DIR, RAW_DATA_DIR, CANCER_DATA_DIR
+    FULL_DATA_DIR, LANDMARKS_DATA_DIR, RAW_DATA_DIR, CANCER_DATA_DIR, LANDMARK_URL
 
 
 class DataParser:
@@ -54,11 +54,8 @@ class DataParser:
         return data
 
     def pickle_data(self):
-        try:
-            os.makedirs(os.path.join(CANCER_DATA_DIR, 'full'))
-            os.makedirs(os.path.join(CANCER_DATA_DIR, 'landmarks'))
-        except Exception as ex:
-            print(str(ex))
+        os.makedirs(os.path.join(CANCER_DATA_DIR, 'full'), exist_ok=True)
+        os.makedirs(os.path.join(CANCER_DATA_DIR, 'landmarks'), exist_ok=True)
 
         data = self.parse_data()
         landmarks = self.get_landmarks()
@@ -98,8 +95,7 @@ class DataParser:
 
     @staticmethod
     def get_landmarks():
-        response = requests.get(
-            'https://api.clue.io/api/genes?filter={%22where%22:{%22l1000_type%22:%22landmark%22}}&user_key=18c46f38bfd42d8c229d1866dced8a89')
+        response = requests.get(LANDMARK_URL)
 
         df = pd.DataFrame(response.json())
         df = df.rename({'gene_symbol': 'probe_id'}, axis=1)
