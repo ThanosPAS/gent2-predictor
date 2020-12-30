@@ -142,4 +142,10 @@ cython_debug/
 *.p
 *.sql
 data.csv
+more_data.csv
 .DS_Store
+*.pth
+*.pdf
+*.png
+*.jpg
+*.txt
