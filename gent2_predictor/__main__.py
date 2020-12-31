@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 from gent2_predictor.data_parser.data_parser import DataParser
-from gent2_predictor.predictor.ffn import FFN, Baseline_FFN
+from gent2_predictor.predictor.ffn import FFN, Baseline_FFN, Landmarks_full,Landmarks_baseline
 from gent2_predictor.predictor.ffn_trainer import FFNTrainer
 from gent2_predictor.predictor.transformer_trainer import TransformerTrainer
 from gent2_predictor.settings import create_pathname, MODEL_SELECTOR, USE_FULL_DATA
@@ -40,14 +40,25 @@ def main():
         parser.pickle_data()
 
     elif args.ffn_train:
-        if MODEL_SELECTOR == 'FULL_FFN':
-            model = FFN()
-            trainer = FFNTrainer(model, USE_FULL_DATA)
-            trainer.start_loop()
+        if USE_FULL_DATA == True:
+            if MODEL_SELECTOR == 'FULL_FFN':
+                model = FFN()
+                trainer = FFNTrainer(model, USE_FULL_DATA)
+                trainer.start_loop()
+            else:
+                model = Baseline_FFN()
+                trainer = FFNTrainer(model, USE_FULL_DATA)
+                trainer.start_loop()
         else:
-            model = Baseline_FFN()
-            trainer = FFNTrainer(model, USE_FULL_DATA)
-            trainer.start_loop()
+            if MODEL_SELECTOR == 'FULL_FFN':
+                model = Landmarks_full()
+                trainer = FFNTrainer(model, USE_FULL_DATA)
+                trainer.start_loop()
+            else:
+                model = Landmarks_baseline()
+                trainer = FFNTrainer(model, USE_FULL_DATA)
+                trainer.start_loop()
+
 
     elif args.predict_on_ffn:
         model_filename, model_path = create_pathname()

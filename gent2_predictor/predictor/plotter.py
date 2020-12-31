@@ -14,7 +14,7 @@ class Plotter:
     def __init__(self, model_name):
         self.model_name = model_name
 
-    def plot_losses(self, train_loss, valid_loss, burn_in=20):
+    def plot_losses(self, train_loss, valid_loss, burn_in=1):
         sns.set_theme()
         sns.set_palette('icefire')
         plt.figure(figsize=(15, 8))
@@ -106,7 +106,7 @@ class Plotter:
         fig, ax = plt.subplots(figsize=figsize)
         sns.heatmap(cm, cmap="PuRd", annot=annot, fmt='', ax=ax)
 
-        plot_path = os.path.join(PLOTS_PATH_DIR, f'losses_{self.model_name}.pdf')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'cm_{self.model_name}.pdf')
         plt.savefig(plot_path, bbox_inches='tight', pad_inches=0)
         plt.show()
 
