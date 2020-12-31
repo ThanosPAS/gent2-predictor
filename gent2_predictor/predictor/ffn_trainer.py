@@ -8,7 +8,6 @@ from gent2_predictor.predictor.plotter import Plotter
 from gent2_predictor.predictor.trainer import Trainer
 from gent2_predictor.settings import DEVICE, OPTIMIZER, LEARNING_RATE, L2_REG, MOMENTUM, \
     INIT_METHOD, USE_CUDA, EPOCHS, MODEL_SELECTOR
-from gent2_predictor.settings import PLOTS_PATH_DIR
 
 
 class FFNTrainer(Trainer):
@@ -67,11 +66,6 @@ class FFNTrainer(Trainer):
                     y_train = person['cancer_type'].type(long_tensor)
 
                     pred = self.model(x_train)
-                    from torchviz import make_dot
-                    import os
-                    make_dot(pred, params=dict(list(self.model.named_parameters()))).render(
-                        os.path.join(PLOTS_PATH_DIR, 'net'), format="pdf")
-                    return
                     t_loss = self.criterion(pred, y_train)
                     personal_train_acc = self.multi_acc(pred, y_train)
                     running_train_acc.append(personal_train_acc)
