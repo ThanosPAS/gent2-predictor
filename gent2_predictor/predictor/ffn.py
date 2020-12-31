@@ -39,7 +39,7 @@ class FFN(nn.Module):
         self.layernorm6 = nn.LayerNorm(100)
         self.relu6 = nn.ReLU()
         # Output layer
-        self.linear_out = nn.Linear(100, 6)
+        self.linear_out = nn.Linear(100, 8)
         self.softmax = nn.Softmax()
 
     def forward(self, x):
