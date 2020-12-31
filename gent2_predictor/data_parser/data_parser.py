@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 import torch
 from torch.utils.data import DataLoader, random_split
+from tqdm import tqdm
 
 from gent2_predictor.data_parser.gent2_dataset import Gent2Dataset
 from gent2_predictor.settings import PROCESSED_DATA_DIR, \
@@ -30,6 +31,7 @@ class DataParser:
         more_structure = more_structure.rename({'disease': 'cancer_type'}, axis=1)
 
         structure = pd.concat([structure, more_structure])
+        structure = structure.drop_duplicates(subset=['patient'])
 
         if not os.path.exists(PROCESSED_DATA_DIR):
             try:
@@ -61,8 +63,11 @@ class DataParser:
         landmarks = self.get_landmarks()
         landmarks_data = data.merge(landmarks, on='probe_id')
 
-        for patient in data['patient'].unique():
-            for dataset, location in [(data, 'full'), (landmarks_data, 'landmarks')]:
+        for dataset, location in [
+            (data, 'full'),
+            (landmarks_data, 'landmarks')
+        ]:
+            for patient in tqdm(data['patient'].unique()):
                 patient_data = dataset.loc[dataset['patient'] == patient]
                 patient_data = patient_data['expression'].values
                 tensor = torch.from_numpy(patient_data)
@@ -72,7 +77,7 @@ class DataParser:
     @staticmethod
     def data_loading(full_data=False):
         dataset = Gent2Dataset(
-            os.path.join(PROCESSED_DATA_DIR, 'structure.csv'),
+            os.path.join(PROCESSED_DATA_DIR, 'full_structure.csv'),
             FULL_DATA_DIR if full_data else LANDMARKS_DATA_DIR
         )
 
