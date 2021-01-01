@@ -12,7 +12,7 @@ CANCER_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data')
 FULL_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data', 'full')
 LANDMARKS_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data', 'landmarks')
 
-USE_FULL_DATA = True
+USE_FULL_DATA = False
 
 MODEL_PATH_DIR = os.path.join(DATA_DIR, 'models')
 

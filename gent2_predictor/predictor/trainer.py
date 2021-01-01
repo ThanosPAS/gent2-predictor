@@ -35,7 +35,7 @@ class Trainer:
             file = os.path.join(PREDICTIONS_PATH_DIR, report_name)
             report = classification_report(y_test_arr, pred_arr, output_dict=True)
             df = pd.DataFrame(report).transpose()
-            df.to_csv(file, index=False)
+            df.to_csv(file)
         else:
             self.model_name = filename
             file_name = f'train-val_losses_{self.model_name}_{timestamp}.csv'
