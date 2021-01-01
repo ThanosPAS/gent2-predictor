@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-
+from sklearn.metrics import classification_report
 from gent2_predictor.data_parser.data_parser import DataParser
 from gent2_predictor.predictor.plotter import Plotter
 from gent2_predictor.predictor.trainer import Trainer
@@ -120,7 +120,7 @@ class FFNTrainer(Trainer):
         plotter = Plotter(self.model_name)
         plotter.plot_losses(train_loss, valid_loss)
         self.save_predictions(self.model_name, loss_list=None, train_loss=train_loss,
-                              valid_loss=valid_loss, mode=False)
+                              valid_loss=valid_loss, y_test_arr=None, pred_arr=None, mode=False)
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
@@ -188,11 +188,12 @@ class FFNTrainer(Trainer):
             pred_arr = np.asarray(pred_labels)
             y_test_arr = np.asarray(y_test_list)
 
-            self.save_predictions(self.model_name,loss_list, train_loss=None, valid_loss=None, mode=True)
+            self.save_predictions(self.model_name,loss_list, train_loss=None, valid_loss=None, y_test_arr=y_test_arr, pred_arr=pred_arr, mode=True)
 
             plotter = Plotter(self.model_name)
             plotter.plot_cm(y_test_arr, pred_arr)
             #plotter.plot_roc_curve(y_test_arr,pred_arr)
+            print(classification_report(y_test_arr, pred_arr))
 
         print('Prediction successful')
         print('Overall test accuracy:', testset_acc, 'Overall test loss:', test_loss)

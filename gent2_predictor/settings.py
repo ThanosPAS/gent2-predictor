@@ -58,10 +58,10 @@ TARGET_LABELS = {
     'normal'  : 7,
 }
 
-MODEL_SELECTOR = 'FULL_FFN'
+#MODEL_SELECTOR = 'FULL_FFN'
 
 
-# MODEL_SELECTOR = 'BASELINE_FFN'
+MODEL_SELECTOR = 'BASELINE_FFN'
 
 
 def create_pathname():
