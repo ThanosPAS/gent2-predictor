@@ -42,7 +42,7 @@ class Plotter:
             plt.plot(list(range(burn_in, len(train_acc_list))), train_acc_list[burn_in:],
                      label='Train accuracy')
             plt.plot(list(range(burn_in, len(val_acc_list))), val_acc_list[burn_in:],
-                     label='Validation accuracy')
+                     label='Accumulated Validation Accuracy')
             # find position of lowest validation loss
             minposs = val_acc_list.index(min(val_acc_list)) + 1
             plt.axvline(minposs, linestyle='--', color='r', label='Minimum Accumulated Validation Accuracy')
@@ -51,7 +51,7 @@ class Plotter:
             sns.set_palette('icefire')
             plt.figure(figsize=(15, 8))
             plt.plot(list(range(burn_in, len(test_acc_list))), test_acc_list[burn_in:],
-                     label='Test accuracy')
+                     label='Accumulated Test Accuracy')
             # find position of lowest validation loss
             minposs = test_acc_list.index(min(test_acc_list)) + 1
             plt.axvline(minposs, linestyle='--', color='r', label='Minimum Accumulated Test Accuracy')
