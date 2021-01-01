@@ -46,7 +46,7 @@ class FFNTrainer(Trainer):
             long_tensor = torch.LongTensor
             float_tensor = torch.FloatTensor
 
-        train_loss, valid_loss = [], []
+        train_loss, valid_loss, train_acc_list, val_acc_list = [], [], [],[]
         train_epoch_acc, val_epoch_acc = dict(), dict()
 
         for epoch in range(EPOCHS):
@@ -116,9 +116,11 @@ class FFNTrainer(Trainer):
             self.model_name = self.save_model(self.model, 'ffn')
         else:
             self.model_name = self.save_model(self.model, 'baselineFFN')
-
+        train_acc_list = list(train_epoch_acc.values())
+        val_acc_list = list(val_epoch_acc.values())
         plotter = Plotter(self.model_name)
         plotter.plot_losses(train_loss, valid_loss)
+        plotter.accuracy(train_acc_list, val_acc_list, test_acc_list=None, mode=True)
         self.save_predictions(self.model_name, loss_list=None, train_loss=train_loss,
                               valid_loss=valid_loss, y_test_arr=None, pred_arr=None, mode=False)
 
@@ -150,7 +152,7 @@ class FFNTrainer(Trainer):
 
         test_batch_loss = 0
         test_loss = 0
-        pred_labels, loss_list, running_test_acc, y_test_list = [], [], [], []
+        pred_labels, loss_list, running_test_acc, y_test_list,running_acc_list = [], [], [], [],[]
 
         with torch.no_grad():
             self.model.eval()
@@ -177,6 +179,7 @@ class FFNTrainer(Trainer):
                     # print('Predicted cancer type for patient ', patient[person], 'is: ', pred_labels[person])
                     testset_acc = sum(running_test_acc) / len(running_test_acc)
                     testset_acc = round(testset_acc, 3) * 100
+                    running_acc_list.append(testset_acc)
                     pbar.set_postfix({
                         'loss'                : t_loss.item(),
                         'accumulated_test_acc': testset_acc
@@ -191,6 +194,7 @@ class FFNTrainer(Trainer):
             self.save_predictions(self.model_name,loss_list, train_loss=None, valid_loss=None, y_test_arr=y_test_arr, pred_arr=pred_arr, mode=True)
 
             plotter = Plotter(self.model_name)
+            plotter.accuracy(train_acc_list=None, val_acc_list=None, test_acc_list=running_acc_list, mode=False)
             plotter.plot_cm(y_test_arr, pred_arr)
             #plotter.plot_roc_curve(y_test_arr,pred_arr)
             print(classification_report(y_test_arr, pred_arr))
