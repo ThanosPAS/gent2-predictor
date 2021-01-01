@@ -120,7 +120,7 @@ class FFNTrainer(Trainer):
         val_acc_list = list(val_epoch_acc.values())
         plotter = Plotter(self.model_name)
         plotter.plot_losses(train_loss, valid_loss)
-        plotter.accuracy(train_acc_list, val_acc_list, test_acc_list=None, mode=True)
+        plotter.accuracy(train_acc_list=train_acc_list, val_acc_list=val_acc_list, test_acc_list=None, mode=True)
         self.save_predictions(self.model_name, loss_list=None, train_loss=train_loss,
                               valid_loss=valid_loss, y_test_arr=None, pred_arr=None, mode=False)
 
