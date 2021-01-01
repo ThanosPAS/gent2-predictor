@@ -34,6 +34,35 @@ class Plotter:
         plt.savefig(plot_path, bbox_inches='tight', pad_inches=0)
         plt.show()
 
+    def accuracy(self, train_acc_list, val_acc_list, test_acc_list=None,burn_in=1, mode=True):
+        if mode:
+            sns.set_theme()
+            sns.set_palette('icefire')
+            plt.figure(figsize=(15, 8))
+            plt.plot(list(range(burn_in, len(train_acc_list))), train_acc_list[burn_in:],
+                     label='Train accuracy')
+            plt.plot(list(range(burn_in, len(val_acc_list))), val_acc_list[burn_in:],
+                     label='Validation accuracy')
+            # find position of lowest validation loss
+            minposs = val_acc_list.index(min(val_acc_list)) + 1
+            plt.axvline(minposs, linestyle='--', color='r', label='Minimum Validation Accuracy')
+        else:
+            sns.set_theme()
+            sns.set_palette('icefire')
+            plt.figure(figsize=(15, 8))
+            plt.plot(list(range(burn_in, len(test_acc_list))), test_acc_list[burn_in:],
+                     label='Test accuracy')
+            # find position of lowest validation loss
+            minposs = test_acc_list.index(min(test_acc_list)) + 1
+            plt.axvline(minposs, linestyle='--', color='r', label='Minimum Test Accuracy')
+
+        plt.legend(frameon=False)
+        plt.xlabel('Patients')
+        plt.ylabel('Accuracy')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'accuracy_{self.model_name}.pdf')
+        plt.savefig(plot_path, bbox_inches='tight', pad_inches=0)
+        plt.show()
+
     def plot_roc_curve(self, test, pred):
         # Define where pred comes from
         # I am not sure if the threshold should be 50%
