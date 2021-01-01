@@ -12,7 +12,7 @@ CANCER_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data')
 FULL_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data', 'full')
 LANDMARKS_DATA_DIR = os.path.join(DATA_DIR, 'cancer_data', 'landmarks')
 
-USE_FULL_DATA = False
+USE_FULL_DATA = True
 
 MODEL_PATH_DIR = os.path.join(DATA_DIR, 'models')
 
@@ -31,7 +31,7 @@ if not os.path.exists(PREDICTIONS_PATH_DIR):
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 USE_CUDA = torch.cuda.is_available()
 
-EPOCHS = 500
+EPOCHS = 100
 LEARNING_RATE = 0.0001
 
 # OPTIMIZER = 'ADAM'
