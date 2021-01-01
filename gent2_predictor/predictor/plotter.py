@@ -45,7 +45,7 @@ class Plotter:
                      label='Validation accuracy')
             # find position of lowest validation loss
             minposs = val_acc_list.index(min(val_acc_list)) + 1
-            plt.axvline(minposs, linestyle='--', color='r', label='Minimum Validation Accuracy')
+            plt.axvline(minposs, linestyle='--', color='r', label='Minimum Accumulated Validation Accuracy')
         else:
             sns.set_theme()
             sns.set_palette('icefire')
@@ -54,7 +54,7 @@ class Plotter:
                      label='Test accuracy')
             # find position of lowest validation loss
             minposs = test_acc_list.index(min(test_acc_list)) + 1
-            plt.axvline(minposs, linestyle='--', color='r', label='Minimum Test Accuracy')
+            plt.axvline(minposs, linestyle='--', color='r', label='Minimum Accumulated Test Accuracy')
 
         plt.legend(frameon=False)
         plt.xlabel('Patients')
