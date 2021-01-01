@@ -40,7 +40,7 @@ class Plotter:
             sns.set_palette('icefire')
             plt.figure(figsize=(15, 8))
             plt.plot(list(range(burn_in, len(train_acc_list))), train_acc_list[burn_in:],
-                     label='Train accuracy')
+                     label='Train Accumulated Accuracy')
             plt.plot(list(range(burn_in, len(val_acc_list))), val_acc_list[burn_in:],
                      label='Accumulated Validation Accuracy')
             # find position of lowest validation loss
