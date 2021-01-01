@@ -62,17 +62,30 @@ def main():
 
     elif args.predict_on_ffn:
         model_filename, model_path = create_pathname()
-        if model_filename.startswith('b'):
-            model = Baseline_FFN()
-            model.load_state_dict(torch.load(model_path))
-            trainer = FFNTrainer(model, USE_FULL_DATA)
-            scores = trainer.predict(model_filename)
+        if USE_FULL_DATA == True:
+            if model_filename.startswith('b'):
+                model = Baseline_FFN()
+                model.load_state_dict(torch.load(model_path))
+                trainer = FFNTrainer(model, USE_FULL_DATA)
+                scores = trainer.predict(model_filename)
 
+            else:
+                model = FFN()
+                model.load_state_dict(torch.load(model_path))
+                trainer = FFNTrainer(model, USE_FULL_DATA)
+                scores = trainer.predict(model_filename)
         else:
-            model = FFN()
-            model.load_state_dict(torch.load(model_path))
-            trainer = FFNTrainer(model, USE_FULL_DATA)
-            scores = trainer.predict(model_filename)
+            if model_filename.startswith('b'):
+                model = Landmarks_baseline()
+                model.load_state_dict(torch.load(model_path))
+                trainer = FFNTrainer(model, USE_FULL_DATA)
+                scores = trainer.predict(model_filename)
+
+            else:
+                model = Landmarks_full()
+                model.load_state_dict(torch.load(model_path))
+                trainer = FFNTrainer(model, USE_FULL_DATA)
+                scores = trainer.predict(model_filename)
 
 
     elif args.transformer_train:

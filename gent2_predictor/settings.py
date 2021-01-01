@@ -31,7 +31,7 @@ if not os.path.exists(PREDICTIONS_PATH_DIR):
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 USE_CUDA = torch.cuda.is_available()
 
-EPOCHS = 500
+EPOCHS = 100
 LEARNING_RATE = 0.0001
 
 # OPTIMIZER = 'ADAM'
@@ -58,10 +58,10 @@ TARGET_LABELS = {
     'normal'  : 7,
 }
 
-MODEL_SELECTOR = 'FULL_FFN'
+#MODEL_SELECTOR = 'FULL_FFN'
 
 
-# MODEL_SELECTOR = 'BASELINE_FFN'
+MODEL_SELECTOR = 'BASELINE_FFN'
 
 
 def create_pathname():
