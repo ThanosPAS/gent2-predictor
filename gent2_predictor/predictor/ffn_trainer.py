@@ -122,7 +122,7 @@ class FFNTrainer(Trainer):
         plotter.plot_losses(train_loss, valid_loss)
         plotter.accuracy(train_acc_list=train_acc_list, val_acc_list=val_acc_list, test_acc_list=None, mode=True)
         self.save_predictions(self.model_name, loss_list=None, train_loss=train_loss,
-                              valid_loss=valid_loss, y_test_arr=None, pred_arr=None, mode=False)
+                              valid_loss=valid_loss, y_test_arr=None, pred_arr=None,train_acc_list=train_acc_list, val_acc_list=val_acc_list,test_acc_list=None, mode=False)
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
@@ -191,7 +191,7 @@ class FFNTrainer(Trainer):
             pred_arr = np.asarray(pred_labels)
             y_test_arr = np.asarray(y_test_list)
 
-            self.save_predictions(self.model_name,loss_list, train_loss=None, valid_loss=None, y_test_arr=y_test_arr, pred_arr=pred_arr, mode=True)
+            self.save_predictions(self.model_name,loss_list, train_loss=None, valid_loss=None, y_test_arr=y_test_arr, pred_arr=pred_arr,train_acc_list=None, val_acc_list=None,test_acc_list=running_acc_list, mode=True)
 
             plotter = Plotter(self.model_name)
             plotter.accuracy(train_acc_list=None, val_acc_list=None, test_acc_list=running_acc_list, mode=False)
