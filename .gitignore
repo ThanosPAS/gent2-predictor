@@ -140,6 +140,7 @@ cython_debug/
 .idea
 
 *.p
+!data/cancer_data/landmarks/*.p
 *.sql
 data.csv
 more_data.csv
