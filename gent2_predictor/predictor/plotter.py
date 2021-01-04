@@ -7,7 +7,7 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve, auc, matthews_corrcoef
 
-from gent2_predictor.settings import PLOTS_PATH_DIR, TARGET_LABELS, PREDICTIONS_PATH_DIR
+from gent2_predictor.settings import PLOTS_PATH_DIR, TARGET_LABELS, PREDICTIONS_PATH_DIR, DATA_DIR
 
 
 class Plotter:
@@ -99,16 +99,7 @@ class Plotter:
         plt.savefig(plot_path)
         plt.show()
 
-    # def stats(self):
-    #     sns.countplot(x='Cancer types', data=output_classes)
-    #
-    # def accuracy(self):
-    #     accuracy_stats['train'].append(train_epoch_acc / len(x_train))
-    #     accuracy_stats['val'].append(val_epoch_acc / len(x_val))
-    #     print(
-    #         f'Epoch {e + 0:03}: | Train Acc: {train_epoch_acc / len(x_train):.3f}| Val Acc: {val_epoch_acc / len(x_val):.3f}')
-
-    def stat_significance(y, pred):
+    def stat_significance(self, y, pred):
         mcc = matthews_corrcoef(y, pred)
         raise NotImplementedError
 
@@ -166,28 +157,44 @@ class Plotter:
         plt.savefig(plot_path, bbox_inches='tight', pad_inches=0)
         plt.show()
 
-# burnin = 30
-#
-# sns.set_theme()
-# sns.set_palette('Accent')
-# plt.figure(figsize=(8, 8))
-#
-# plt.plot(list(range(burnin, len(baseline_t))), baseline_t[burnin:], label='Baseline training loss')
-# plt.plot(list(range(burnin, len(baseline_v))), baseline_v[burnin:], label='Baseline validation loss')
-#
-# plt.plot(list(range(burnin, len(normal_t))), normal_t[burnin:], label='Final training loss')
-# plt.plot(list(range(burnin, len(normal_v))), normal_v[burnin:], label='Final validation loss')
-#
-# # find position of lowest validation loss
-# minposs = baseline_v.index(min(baseline_v)) + 1
-# plt.axvline(minposs, linestyle='--', color='r', label='Minimum baseline validation Loss')
-#
-# minposs = normal_v.index(min(normal_v)) + 1
-# plt.axvline(minposs, linestyle='--', color='r', label='Minimum final validation Loss')
-#
-# plt.legend(frameon=False)
-# plt.xlabel('Epochs')
-# plt.ylabel('Loss')
-# plot_path = os.path.join(PLOTS_PATH_DIR, f'losses_500.pdf')
-# plt.savefig(plot_path, bbox_inches='tight', pad_inches=0)
-# plt.show()
+    def plot_train(self):
+        EPOCHS = 100
+        train = {
+            'full_train' : pd.read_csv(os.path.join(DATA_DIR, 'losses', 'full_train.csv')),
+            'landmarks_train' : pd.read_csv(os.path.join(DATA_DIR, 'losses', 'landmarks_train.csv')),
+            'full_base_train' : pd.read_csv(os.path.join(DATA_DIR, 'losses', 'full_base_train.csv')),
+            'landmarks_base_train' : pd.read_csv(os.path.join(DATA_DIR, 'losses', 'landmarks_base_train.csv')),
+        }
+
+        plt.figure(figsize=(8, 8))
+
+        c_t_loss = ['#00e63d', '#00bbe6', '#f23d3d', '#ce8eed']
+        c_v_loss = ['#348a4b', '#368091', '#a11818', '#9b00e8']
+
+        for index, key in enumerate(train.items()):
+            key, df = key
+            plt.plot(list(range(EPOCHS)), df['train_loss'].iloc[:EPOCHS], label=f'training_{key}', color=c_t_loss[index])
+            plt.plot(list(range(EPOCHS)), df['validation_loss'].iloc[:EPOCHS], label=f'validation_{key}', color=c_v_loss[index])
+
+        plt.legend(frameon=False)
+        plt.xlabel('Epochs')
+        plt.ylabel('Training loss')
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'losses_train.pdf')
+        plt.savefig(plot_path, bbox_inches='tight', pad_inches=0)
+        plt.show()
+
+        plt.figure(figsize=(8, 8))
+        f, ax = plt.subplots(1)
+
+        for index, key in enumerate(train.items()):
+            key, df = key
+            plt.plot(list(range(EPOCHS)), df['train_accuracy'].iloc[:EPOCHS], label=f'training_{key}', color=c_t_loss[index])
+            plt.plot(list(range(EPOCHS)), df['validation_accuracy'].iloc[:EPOCHS], label=f'validation_{key}', color=c_v_loss[index])
+
+        plt.legend(frameon=False)
+        plt.xlabel('Epochs')
+        plt.ylabel('Training accuracy')
+        ax.set_ylim(bottom=65)
+        plot_path = os.path.join(PLOTS_PATH_DIR, f'acc_train.pdf')
+        plt.savefig(plot_path, bbox_inches='tight', pad_inches=0)
+        plt.show()
