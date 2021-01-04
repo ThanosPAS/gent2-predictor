@@ -1,8 +1,9 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from tqdm import tqdm
 from sklearn.metrics import classification_report
+from tqdm import tqdm
+
 from gent2_predictor.data_parser.data_parser import DataParser
 from gent2_predictor.predictor.plotter import Plotter
 from gent2_predictor.predictor.trainer import Trainer
@@ -46,7 +47,7 @@ class FFNTrainer(Trainer):
             long_tensor = torch.LongTensor
             float_tensor = torch.FloatTensor
 
-        train_loss, valid_loss, train_acc_list, val_acc_list = [], [], [],[]
+        train_loss, valid_loss, train_acc_list, val_acc_list = [], [], [], []
         train_epoch_acc, val_epoch_acc = dict(), dict()
 
         for epoch in range(EPOCHS):
@@ -120,9 +121,12 @@ class FFNTrainer(Trainer):
         val_acc_list = list(val_epoch_acc.values())
         plotter = Plotter(self.model_name)
         plotter.plot_losses(train_loss, valid_loss)
-        plotter.accuracy(train_acc_list=train_acc_list, val_acc_list=val_acc_list, test_acc_list=None, mode=True)
+        plotter.accuracy(train_acc_list=train_acc_list, val_acc_list=val_acc_list,
+                         test_acc_list=None, mode=True)
         self.save_predictions(self.model_name, loss_list=None, train_loss=train_loss,
-                              valid_loss=valid_loss, y_test_arr=None, pred_arr=None,train_acc_list=train_acc_list, val_acc_list=val_acc_list,test_acc_list=None, mode=False)
+                              valid_loss=valid_loss, y_test_arr=None, pred_arr=None,
+                              train_acc_list=train_acc_list, val_acc_list=val_acc_list,
+                              test_acc_list=None, mode=False)
 
         return train_loss, valid_loss, train_epoch_acc, val_epoch_acc
 
@@ -152,14 +156,14 @@ class FFNTrainer(Trainer):
 
         test_batch_loss = 0
         test_loss = 0
-        pred_labels, loss_list, running_test_acc, y_test_list,running_acc_list = [], [], [], [],[]
+        pred_labels, loss_list, running_test_acc, y_test_list, running_acc_list = [], [], [], [], []
 
         with torch.no_grad():
             self.model.eval()
             i = 0
-            for person in self.test_loader:
-                with tqdm(total=len(self.test_loader.dataset),
-                          desc=f"[person {i + 1:3d}/{len(self.test_loader.dataset)}]") as pbar:
+            with tqdm(total=len(self.test_loader.dataset),
+                      desc=f"[person {i + 1:3d}/{len(self.test_loader.dataset)}]") as pbar:
+                for person in self.test_loader:
                     x_test = person['data'].type(float_tensor)
                     y_test = person['cancer_type'].type(long_tensor)
                     pred = self.model(x_test)
@@ -172,7 +176,10 @@ class FFNTrainer(Trainer):
                     loss_str = str(loss_cast)
                     loss_list.append(loss_str)
                     y_test_list.append(y_test.item())
+
+                    pbar.set_postfix({'loss': test_batch_loss})
                     pbar.update(x_test.shape[0])
+
                     y_pred_softmax = torch.log_softmax(pred, dim=1)
                     _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
                     pred_labels.append(y_pred_tags.item())
@@ -191,12 +198,15 @@ class FFNTrainer(Trainer):
             pred_arr = np.asarray(pred_labels)
             y_test_arr = np.asarray(y_test_list)
 
-            self.save_predictions(self.model_name,loss_list, train_loss=None, valid_loss=None, y_test_arr=y_test_arr, pred_arr=pred_arr,train_acc_list=None, val_acc_list=None,test_acc_list=running_acc_list, mode=True)
+            self.save_predictions(self.model_name, loss_list, train_loss=None, valid_loss=None,
+                                  y_test_arr=y_test_arr, pred_arr=pred_arr, train_acc_list=None,
+                                  val_acc_list=None, test_acc_list=running_acc_list, mode=True)
 
             plotter = Plotter(self.model_name)
-            plotter.accuracy(train_acc_list=None, val_acc_list=None, test_acc_list=running_acc_list, mode=False)
+            plotter.accuracy(train_acc_list=None, val_acc_list=None,
+                             test_acc_list=running_acc_list, mode=False)
             plotter.plot_cm(y_test_arr, pred_arr)
-            #plotter.plot_roc_curve(y_test_arr,pred_arr)
+            # plotter.plot_roc_curve(y_test_arr,pred_arr)
             print(classification_report(y_test_arr, pred_arr))
 
         print('Prediction successful')
